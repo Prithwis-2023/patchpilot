@@ -34,7 +34,7 @@ Instead of manually writing bug reports, PatchPilot:
 
 **Backend:**
 - FastAPI (Python)
-- Google Gemini 2.5 Flash API
+- Google Gemini 3 Flash (Preview) API
 - Playwright (test execution)
 - OpenCV + Decord (video processing)
 - Pydantic (data validation)
