@@ -345,8 +345,24 @@ export class HttpAdapter implements BackendAdapter {
     analysis: AnalysisResult,
     targetUrl?: string
   ): Promise<GeneratedTest> {
+    // Backend expects AnalysisResponse format
+    // Convert timeline from frontend format to backend format
+    const backendTimeline = analysis.timeline.map((item) => {
+      // Parse timestamp (MM:SS) to seconds
+      const [minutes, seconds] = item.timestamp.split(":").map(Number);
+      const totalSeconds = (minutes || 0) * 60 + (seconds || 0);
+      return {
+        t: totalSeconds,
+        event: item.description,
+      };
+    });
+
     const payload = {
-      ...analysis,
+      title: analysis.expected || "Bug Analysis",
+      timeline: backendTimeline,
+      reproSteps: analysis.reproSteps.map((step) => step.description),
+      expected: analysis.expected,
+      actual: analysis.actual,
       targetUrl: targetUrl || analysis.targetUrl,
     };
 
@@ -459,42 +475,58 @@ export class HttpAdapter implements BackendAdapter {
     }
 
     // Check for reproSteps
-    if (!Array.isArray(obj.reproSteps) && !Array.isArray(obj.repro_steps)) {
+    if (!Array.isArray(obj.reproSteps)) {
       throw new NormalizationError(
-        "Analysis response missing 'reproSteps' or 'repro_steps' array",
+        "Analysis response missing 'reproSteps' array",
         ["reproSteps"],
         raw
       );
     }
 
-    // Normalize field names (handle snake_case from backend)
+    // Backend returns timeline as [{t: number, event: string}]
+    // Frontend expects [{timestamp: string, description: string}]
     const timeline = obj.timeline.map((event: unknown) => {
-      if (
-        typeof event === "object" &&
-        event !== null &&
-        "timestamp" in event &&
-        "description" in event
-      ) {
-        return {
-          timestamp: String((event as { timestamp: unknown }).timestamp),
-          description: String((event as { description: unknown }).description),
-        };
+      if (typeof event === "object" && event !== null) {
+        // Backend format: {t: number, event: string}
+        if ("t" in event && "event" in event) {
+          const t = (event as { t: unknown }).t;
+          const eventStr = (event as { event: unknown }).event;
+          // Convert t (seconds) to timestamp string (MM:SS format)
+          const seconds = typeof t === "number" ? t : 0;
+          const minutes = Math.floor(seconds / 60);
+          const secs = Math.floor(seconds % 60);
+          return {
+            timestamp: `${String(minutes).padStart(2, "0")}:${String(secs).padStart(2, "0")}`,
+            description: String(eventStr),
+          };
+        }
+        // Frontend format: {timestamp: string, description: string} (fallback)
+        if ("timestamp" in event && "description" in event) {
+          return {
+            timestamp: String((event as { timestamp: unknown }).timestamp),
+            description: String((event as { description: unknown }).description),
+          };
+        }
       }
       throw new NormalizationError(
-        "Timeline event missing required fields",
-        ["timestamp", "description"],
+        "Timeline event missing required fields (expected 't' and 'event' or 'timestamp' and 'description')",
+        ["t", "event"],
         event
       );
     });
 
-    const reproStepsArray = Array.isArray(obj.reproSteps)
-      ? obj.reproSteps
-      : Array.isArray(obj.repro_steps)
-        ? obj.repro_steps
-        : [];
-    
-    const reproSteps = reproStepsArray.map(
+    // Backend returns reproSteps as string[]
+    // Frontend expects [{number: number, description: string}]
+    const reproSteps = obj.reproSteps.map(
       (step: unknown, index: number) => {
+        // If step is a string (backend format), convert to object
+        if (typeof step === "string") {
+          return {
+            number: index + 1,
+            description: step,
+          };
+        }
+        // If step is an object with description (frontend format - fallback)
         if (
           typeof step === "object" &&
           step !== null &&
@@ -506,7 +538,7 @@ export class HttpAdapter implements BackendAdapter {
           };
         }
         throw new NormalizationError(
-          "Repro step missing required fields",
+          "Repro step must be a string or object with 'description' field",
           ["description"],
           step
         );
@@ -572,27 +604,44 @@ export class HttpAdapter implements BackendAdapter {
 
     const obj = raw as Record<string, unknown>;
 
-    const missing: string[] = [];
-    if (obj.status !== "success" && obj.status !== "failed") {
-      missing.push("status (must be 'success' or 'failed')");
-    }
-    if (typeof obj.stdout !== "string" && obj.stdout !== undefined) {
-      missing.push("stdout (must be string or undefined)");
-    }
-    if (typeof obj.stderr !== "string" && obj.stderr !== undefined) {
-      missing.push("stderr (must be string or undefined)");
+    // Backend returns status: "passed" | "failed"
+    // Frontend expects: "success" | "failed"
+    const backendStatus = obj.status;
+    let frontendStatus: "success" | "failed" = "failed";
+    
+    if (backendStatus === "passed") {
+      frontendStatus = "success";
+    } else if (backendStatus === "failed") {
+      frontendStatus = "failed";
+    } else if (backendStatus === "success") {
+      // Already in frontend format (fallback)
+      frontendStatus = "success";
+    } else {
+      throw new NormalizationError(
+        `Run response status must be 'passed', 'failed', or 'success', got: ${String(backendStatus)}`,
+        ["status"],
+        raw
+      );
     }
 
-    if (missing.length > 0) {
+    // Validate stdout/stderr
+    if (typeof obj.stdout !== "string" && obj.stdout !== undefined) {
       throw new NormalizationError(
-        `Run response missing or invalid fields: ${missing.join(", ")}`,
-        missing,
+        "Run response stdout must be string or undefined",
+        ["stdout"],
+        raw
+      );
+    }
+    if (typeof obj.stderr !== "string" && obj.stderr !== undefined) {
+      throw new NormalizationError(
+        "Run response stderr must be string or undefined",
+        ["stderr"],
         raw
       );
     }
 
     return {
-      status: (obj.status as "success" | "failed") || "failed",
+      status: frontendStatus,
       stdout: String(obj.stdout || ""),
       stderr: String(obj.stderr || ""),
       screenshotUrl:

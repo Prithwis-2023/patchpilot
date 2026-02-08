@@ -1,36 +1,154 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# PatchPilot Frontend
 
-## Getting Started
+Next.js application with cybernetic brutalism design system.
 
-First, run the development server:
+## 🚀 Quick Start
+
+### Prerequisites
+- Node.js 18+
+- pnpm (recommended) or npm
+
+### Installation
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
+# Install dependencies
+pnpm install
+
+# Start development server
 pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Visit http://localhost:3000
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 📦 Available Scripts
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+pnpm dev          # Start dev server (port 3000)
+pnpm build        # Production build
+pnpm start        # Start production server
+pnpm lint         # Run ESLint
+pnpm typecheck    # TypeScript type checking
+```
 
-## Learn More
+## ⚙️ Configuration
 
-To learn more about Next.js, take a look at the following resources:
+### Environment Variables
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Create `.env.local`:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```env
+# Backend API URL (required for backend mode)
+NEXT_PUBLIC_BACKEND_URL=http://localhost:8000
 
-## Deploy on Vercel
+# Pipeline mode: "sample" (default) or "backend"
+NEXT_PUBLIC_PIPELINE_MODE=sample
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+**Default**: Sample mode (uses fixture data, no backend required)
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## 🏗️ Project Structure
+
+```
+frontend/
+├── app/
+│   ├── components/        # React components
+│   │   ├── ui/           # UI kit (buttons, cards, tabs)
+│   │   └── *.tsx         # Feature components
+│   ├── lib/              # Utilities & hooks
+│   │   ├── backendAdapter.ts    # API client
+│   │   ├── usePatchpilotWorkflow.ts  # State machine
+│   │   └── types.ts      # TypeScript types
+│   ├── page.tsx          # Home page
+│   ├── workflow/         # Workflow page
+│   │   └── page.tsx
+│   ├── layout.tsx        # Root layout
+│   └── globals.css       # Global styles
+├── public/               # Static assets
+└── package.json
+```
+
+## 🎨 Design System
+
+**Cybernetic Brutalism Theme:**
+- Deep charcoal backgrounds
+- Neon accents (cyan, magenta, lime)
+- Geometric forms with glitch effects
+- Scanline overlays
+- Custom cursor with trail
+
+**Typography:**
+- JetBrains Mono (headings)
+- IBM Plex Sans (body)
+- Fira Code (code)
+
+## 🔄 Development Modes
+
+### Sample Mode (Default)
+- Uses fixture data from `lib/sampleData.ts`
+- No backend required
+- Perfect for UI/UX development
+
+### Backend Mode
+- Connects to FastAPI backend
+- Real API calls
+- Requires backend server running
+
+Switch modes via dropdown in workflow page header.
+
+## 🧩 Key Components
+
+**Workflow State Machine** (`lib/usePatchpilotWorkflow.ts`):
+- Manages pipeline steps (Upload → Analyze → Test → Run → Patch → Export)
+- Handles state transitions and errors
+- Supports both Sample and Backend adapters
+
+**Backend Adapter** (`lib/backendAdapter.ts`):
+- Abstraction layer for API calls
+- Response normalization
+- Error handling with detailed context
+
+**UI Components**:
+- `HeroSection` - Landing hero with CTAs
+- `DemoWorkflow` - Interactive workflow demo
+- `MacOSCodeEditor` - Code display component
+- `WorkflowVisualizationImproved` - Pipeline visualization
+
+## 🐛 Troubleshooting
+
+**Build Errors:**
+```bash
+# Clear Next.js cache
+rm -rf .next
+pnpm build
+```
+
+**Type Errors:**
+```bash
+pnpm typecheck
+```
+
+**Lint Issues:**
+```bash
+pnpm lint --fix
+```
+
+## 📦 Production Build
+
+```bash
+# Build for production
+pnpm build
+
+# Start production server
+pnpm start
+```
+
+**Deployment:**
+- Vercel (recommended for Next.js)
+- Netlify
+- Any Node.js hosting
+
+## 🔗 Related
+
+- [Backend README](../backend/README.md)
+- [Architecture Docs](../ARCHITECTURE.md)
+- [Root README](../README.md)

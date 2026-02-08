@@ -1,15 +1,27 @@
 import re
 from google import genai
 import json
-from schemas import AnalysisResponse, TestResponse, PatchResponse, PatchResponse
+from schemas import AnalysisResponse, TestResponse, PatchResponse
 import os
 from dotenv import load_dotenv
 
-MODEL_ID = "gemini-2.5-pro-latest"
+# Model selection: Use gemini-2.5-flash for free-tier friendly access
+# Available models: gemini-2.5-flash, gemini-2.0-flash, gemini-flash-latest
+# gemini-3-pro-preview has quota limit 0 for free tier (only works in AI Studio)
+# gemini-2.5-flash: Latest flash model, free-tier friendly, good for multimodal tasks
+MODEL_ID = "gemini-2.5-flash"
 
 load_dotenv(os.path.join(os.path.dirname(__file__), '..', '.env'))
 
-client = genai.Client()
+# Initialize client with API key from environment
+api_key = os.getenv("GENAI_API_KEY") or os.getenv("GOOGLE_API_KEY")
+if not api_key:
+    raise ValueError(
+        "GENAI_API_KEY or GOOGLE_API_KEY environment variable is required. "
+        "Set it in your .env file or environment variables."
+    )
+
+client = genai.Client(api_key=api_key)
 
 #genai.configure(api_key=os.getenv("GENAI_API_KEY"))
 #model = client.models.get("gemini-2.5-pro-latest")
@@ -40,27 +52,97 @@ def analyze_video(frames):
     "timeline": [{"t": number, "event": string}],
     "reproSteps": string[],
     "expected": string,
-    "actual": string
+    "actual": string,
+    "targetUrl": string (optional)
     }
     Do not include markdown or explanation.
     """
+    
+    # Define JSON schema for structured output
+    response_schema = {
+        "type": "object",
+        "properties": {
+            "title": {"type": "string"},
+            "timeline": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "t": {"type": "integer"},
+                        "event": {"type": "string"}
+                    },
+                    "required": ["t", "event"]
+                }
+            },
+            "reproSteps": {
+                "type": "array",
+                "items": {"type": "string"}
+            },
+            "expected": {"type": "string"},
+            "actual": {"type": "string"},
+            "targetUrl": {"type": "string"}
+        },
+        "required": ["title", "timeline", "reproSteps", "expected", "actual"]
+    }
 
-    images = [client.upload_file(f) for f in frames]
-    # we also tell Gemini to strictly output valid JSON
-    response = client.models.generate_content(
-        model=MODEL_ID,
-        contents=[prompt] + images,
-        config = {
-            "temperature": 0.1,
-            "top_p": 0.5,
-            "response_mime_type": "application/json"
-        }
-    )
+    try:
+        # Upload files using the files API
+        uploaded_files = []
+        try:
+            # Use client.files.upload() method - takes 'file' parameter, not 'path'
+            for frame_path in frames:
+                uploaded_file = client.files.upload(file=frame_path)
+                uploaded_files.append(uploaded_file)
+            
+            # Uploaded files can be used directly in contents
+            response = client.models.generate_content(
+                model=MODEL_ID,
+                contents=[prompt] + uploaded_files,
+                config={
+                    "temperature": 0.1,
+                    "top_p": 0.5,
+                    "response_mime_type": "application/json",
+                    "response_schema": response_schema
+                }
+            )
+        finally:
+            # Cleanup uploaded files
+            for uploaded_file in uploaded_files:
+                try:
+                    client.files.delete(uploaded_file.name)
+                except:
+                    pass
 
-    clean_data = clear_json_response(response.text)
-    data = json.loads(clean_data)
+        clean_data = clear_json_response(response.text)
+        data = json.loads(clean_data)
 
-    return AnalysisResponse(**data)
+        return AnalysisResponse(**data)
+    except Exception as e:
+        # Fallback: try without structured output
+        uploaded_files = []
+        try:
+            for frame_path in frames:
+                uploaded_file = client.files.upload(file=frame_path)
+                uploaded_files.append(uploaded_file)
+            
+            response = client.models.generate_content(
+                model=MODEL_ID,
+                contents=[prompt] + uploaded_files,
+                config={
+                    "temperature": 0.1,
+                    "top_p": 0.5,
+                    "response_mime_type": "application/json"
+                }
+            )
+            clean_data = clear_json_response(response.text)
+            data = json.loads(clean_data)
+            return AnalysisResponse(**data)
+        finally:
+            for uploaded_file in uploaded_files:
+                try:
+                    client.files.delete(uploaded_file.name)
+                except:
+                    pass
 
 def generate_test(analysis):
     prompt = f"""
@@ -78,25 +160,38 @@ def generate_test(analysis):
 
     Return ONLY valid JSON:
 
-    {
+    {{
     "filename": string,
     "playwrightSpec": string
-    }
+    }}
     No markdown.
     """
+    
+    response_schema = {
+        "type": "object",
+        "properties": {
+            "filename": {"type": "string"},
+            "playwrightSpec": {"type": "string"}
+        },
+        "required": ["filename", "playwrightSpec"]
+    }
+    
     response = client.models.generate_content(
         model=MODEL_ID,
         contents=prompt,
-        config = {
+        config={
             "temperature": 0.1,
             "top_p": 0.5,
-            "response_mime_type": "application/json"
+            "response_mime_type": "application/json",
+            "response_schema": response_schema
         }
     )
     data = json.loads(clear_json_response(response.text))
     return TestResponse(**data)
 
 def generate_patch(request):
+    failing_test = request.failing_test or (request.run_result and request.run_result.get("playwrightSpec", "")) or ""
+    
     prompt = f"""
     You are a senior Software Engineer. You must provide a fix for a failing Playwright test.
     
@@ -104,7 +199,7 @@ def generate_patch(request):
     {request.error_log}
 
     FAILING TEST CODE:
-    {request.failing_test}
+    {failing_test}
 
     TASK:
     1. Identify the root cause (e.g., race condition, incorrect selector, missing assertion).
@@ -113,25 +208,49 @@ def generate_patch(request):
        --- original
        +++ modified
        @@ -line,count +line,count @@
+    4. Provide rationale as a list of bullet points explaining the fix.
+    5. List any risks or considerations.
     
     RETURN ONLY JSON:
     {{
     "diff": "string (the full unified diff code)",
-    "rationale": ["bullet point 1", "bullet point 2"]
+    "rationale": ["bullet point 1", "bullet point 2"],
+    "risks": ["risk 1", "risk 2"]
     }}
     
     CRITICAL: The diff must be a single string within the JSON. Use '\\n' for newlines.
     """
     
+    response_schema = {
+        "type": "object",
+        "properties": {
+            "diff": {"type": "string"},
+            "rationale": {
+                "type": "array",
+                "items": {"type": "string"}
+            },
+            "risks": {
+                "type": "array",
+                "items": {"type": "string"}
+            }
+        },
+        "required": ["diff", "rationale"]
+    }
+    
     response = client.models.generate_content(
         model=MODEL_ID,
         contents=prompt,
-        config = {
+        config={
             "temperature": 0.1,
-            "response_mime_type": "application/json"
+            "response_mime_type": "application/json",
+            "response_schema": response_schema
         }
     )
     clean_data = clear_json_response(response.text)
     data = json.loads(clean_data)
+    
+    # Ensure risks is always a list
+    if "risks" not in data:
+        data["risks"] = []
 
     return PatchResponse(**data)

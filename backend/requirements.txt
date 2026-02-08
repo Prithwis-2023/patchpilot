@@ -1,12 +1,10 @@
 fastapi
-uvicorn
+uvicorn[standard]
 python-multipart
-pydantic
+pydantic>=2.0.0
 google-genai
 opencv-python
 ffmpeg-python
 playwright
 decord
-uuid
-pydantic
 python-dotenv

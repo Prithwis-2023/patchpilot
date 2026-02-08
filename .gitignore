@@ -48,8 +48,12 @@ reference-web-for-frontend
 
 # Ignore the virtual environment (with the dot)
 .venv/
-**/ .venv/
+**/venv/
+**/.venv/
 
 # Python cache
 **/__pycache__/
 *.py[cod]
+
+# temp of backend
+**/temp/
