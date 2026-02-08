@@ -45,3 +45,15 @@
 
 # reference
 reference-web-for-frontend
+
+# Ignore the virtual environment (with the dot)
+.venv/
+**/ .venv/
+
+# Ignore all environment files
+.env
+**/.env
+
+# Python cache
+**/__pycache__/
+*.py[cod]
