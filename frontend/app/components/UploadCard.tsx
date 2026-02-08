@@ -14,7 +14,7 @@ export default function UploadCard({ onUpload, isUploading = false }: UploadCard
   };
 
   return (
-    <div className="w-full rounded-lg border-2 border-dashed border-gray-300 bg-gray-50 p-8 text-center transition-colors hover:border-gray-400">
+    <div className="card w-full rounded-lg border-2 border-dashed p-8 text-center transition-colors glass-hover">
       <input
         type="file"
         accept="video/*"
@@ -28,9 +28,16 @@ export default function UploadCard({ onUpload, isUploading = false }: UploadCard
         className={`cursor-pointer ${isUploading ? "cursor-not-allowed opacity-50" : ""}`}
       >
         <div className="flex flex-col items-center gap-4">
-          <div className="rounded-full bg-blue-100 p-4">
+          <div
+            className="rounded-full p-4"
+            style={{
+              backgroundColor: "var(--accent)",
+              opacity: 0.1,
+            }}
+          >
             <svg
-              className="h-8 w-8 text-blue-600"
+              className="h-8 w-8"
+              style={{ color: "var(--accent)" }}
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -44,10 +51,10 @@ export default function UploadCard({ onUpload, isUploading = false }: UploadCard
             </svg>
           </div>
           <div>
-            <p className="text-lg font-semibold text-gray-700">
+            <p className="text-lg font-semibold text-primary">
               {isUploading ? "Uploading..." : "Upload Bug Recording"}
             </p>
-            <p className="mt-2 text-sm text-gray-500">
+            <p className="mt-2 text-sm text-muted">
               {isUploading
                 ? "Please wait while we process your video"
                 : "Click to select an MP4 video file (30-60 seconds recommended)"}

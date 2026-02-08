@@ -17,6 +17,9 @@ export type StepStatus = "idle" | "loading" | "success" | "error";
 export interface StepState {
   status: StepStatus;
   error: string | null;
+  startTime?: number;
+  endTime?: number;
+  duration?: number; // in milliseconds
 }
 
 export interface WorkflowState {

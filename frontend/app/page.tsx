@@ -1,307 +1,264 @@
 "use client";
 
-import { usePatchpilotWorkflow } from "./lib/usePatchpilotWorkflow";
-import { WorkflowStep } from "./lib/types";
-import UploadCard from "./components/UploadCard";
-import TimelinePanel from "./components/TimelinePanel";
-import StepsPanel from "./components/StepsPanel";
-import CodePanel from "./components/CodePanel";
-import RunOutputPanel from "./components/RunOutputPanel";
-import ExportPanel from "./components/ExportPanel";
+import { motion } from "framer-motion";
+import Link from "next/link";
+import { Video, Bot, CheckCircle2, Wrench, Zap, BarChart3 } from "lucide-react";
+import DemoWorkflow from "./components/DemoWorkflow";
+import WorkflowVisualizationImproved from "./components/WorkflowVisualizationImproved";
+import CreatorSection from "./components/CreatorSection";
+import HeroSection from "./components/HeroSection";
+import MacOSCodeEditor from "./components/MacOSCodeEditor";
+
+/* 
+  Design Philosophy: Cybernetic Brutalism
+  - Diagonal grid layouts with 15° rotation
+  - Neon cyan/magenta/lime accents on charcoal base
+  - Terminal-inspired typography and code blocks
+  - Glitch effects and scanline overlays
+  - Smooth framer-motion animations with aggressive easing
+*/
 
 export default function Home() {
-  const {
-    sampleMode,
-    setSampleMode,
-    uploadedFile,
-    steps,
-    data,
-    setVideo,
-    analyze,
-    generateTest,
-    runTest,
-    generatePatch,
-    exportBugReport,
-    retry,
-    reset,
-    canGenerateTest,
-    canRunTest,
-    canGeneratePatch,
-    canExport,
-  } = usePatchpilotWorkflow();
-
-  const handleUpload = (file: File) => {
-    setVideo(file);
-    // Auto-trigger analyze after upload
-    setTimeout(() => {
-      analyze();
-    }, 500);
-  };
-
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="border-b border-gray-200 bg-white">
-        <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">PatchPilot</h1>
-              <p className="mt-1 text-sm text-gray-600">
-                Transform bug recordings into fixes with AI-powered analysis
-              </p>
-            </div>
-            <div className="flex items-center gap-4">
-              <label className="flex cursor-pointer items-center gap-2">
-                <input
-                  type="checkbox"
-                  checked={sampleMode}
-                  onChange={(e) => setSampleMode(e.target.checked)}
-                  className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                />
-                <span className="text-sm font-medium text-gray-700">Sample Mode</span>
-              </label>
-              {(uploadedFile || data.analysis) && (
-                <button
-                  onClick={reset}
-                  className="rounded-md bg-gray-200 px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-300"
-                >
-                  Reset
-                </button>
-              )}
-            </div>
+    <div className="min-h-screen bg-background relative overflow-hidden">
+      {/* Navigation */}
+      <motion.nav 
+        className="relative z-20 border-b border-border/50 backdrop-blur-sm sticky top-0"
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6 }}
+      >
+        <div className="container mx-auto px-4 md:px-8 py-4 flex items-center justify-between">
+          <div className="text-xl md:text-2xl font-bold" style={{ fontFamily: 'var(--font-display)' }}>
+            <span className="text-[var(--neon-cyan)]">▶</span> PATCHPILOT
           </div>
-          {sampleMode && (
-            <div className="mt-3 rounded-md bg-blue-50 p-3">
-              <p className="text-sm text-blue-800">
-                <strong>Sample Mode ON:</strong> Using sample data for demonstration. No API calls
-                will be made.
-              </p>
-            </div>
-          )}
+          <div className="hidden md:flex gap-8 font-mono text-sm">
+            <a href="#features" className="text-muted-foreground hover:text-foreground transition">FEATURES</a>
+            <a href="#workflow" className="text-muted-foreground hover:text-foreground transition">WORKFLOW</a>
+            <a href="#demo" className="text-muted-foreground hover:text-foreground transition">DEMO</a>
+          </div>
+          <Link href="/workflow" className="text-[var(--neon-cyan)] font-mono text-sm hover:text-[var(--neon-magenta)] transition">
+            SIMULATOR →
+          </Link>
         </div>
-      </header>
+      </motion.nav>
 
-      {/* Main Content */}
-      <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-        <div className="space-y-6">
-          {/* Step 1: Upload */}
-          <section>
-            <div className="mb-4 flex items-center gap-3">
-              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-600 text-sm font-semibold text-white">
-                1
-              </div>
-              <h2 className="text-2xl font-semibold text-gray-900">Upload Bug Recording</h2>
-            </div>
-            <UploadCard
-              onUpload={handleUpload}
-              isUploading={steps[WorkflowStep.UPLOAD].status === "loading"}
-            />
-            {uploadedFile && (
-              <p className="mt-2 text-sm text-gray-600">
-                Uploaded: {uploadedFile.name} ({(uploadedFile.size / 1024).toFixed(1)} KB)
-              </p>
-            )}
-          </section>
+      {/* Hero Section */}
+      <HeroSection />
 
-          {/* Step 2: Analysis Results */}
-          {(steps[WorkflowStep.ANALYZE].status !== "idle" || data.analysis) && (
-            <section>
-              <div className="mb-4 flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-600 text-sm font-semibold text-white">
-                    2
-                  </div>
-                  <h2 className="text-2xl font-semibold text-gray-900">Analysis Results</h2>
-                </div>
-                {steps[WorkflowStep.ANALYZE].status === "error" && (
-                  <button
-                    onClick={() => retry(WorkflowStep.ANALYZE)}
-                    className="rounded-md bg-red-100 px-3 py-1.5 text-sm font-medium text-red-700 transition-colors hover:bg-red-200"
-                  >
-                    Retry Analysis
-                  </button>
-                )}
-              </div>
-              <div className="grid gap-6 md:grid-cols-2">
-                <TimelinePanel
-                  events={data.analysis?.timeline}
-                  isLoading={steps[WorkflowStep.ANALYZE].status === "loading"}
-                  error={steps[WorkflowStep.ANALYZE].error}
-                  onRetry={() => retry(WorkflowStep.ANALYZE)}
-                />
-                <StepsPanel
-                  steps={data.analysis?.reproSteps}
-                  isLoading={steps[WorkflowStep.ANALYZE].status === "loading"}
-                  error={steps[WorkflowStep.ANALYZE].error}
-                  onRetry={() => retry(WorkflowStep.ANALYZE)}
-                />
-              </div>
-            </section>
-          )}
+      {/* Features Section */}
+      <section id="features" className="relative z-10 py-12 md:py-24 border-t border-border/30">
+        <div className="container mx-auto px-4 md:px-8">
+          <motion.div 
+            className="text-center mb-12 md:mb-16"
+            initial={{ opacity: 0, y: 50 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-100px" }}
+            transition={{ duration: 0.6 }}
+          >
+            <h2 
+              className="text-4xl md:text-5xl font-bold mb-4"
+              style={{ fontFamily: 'var(--font-display)' }}
+            >
+              POWERFUL <span className="text-gradient-magenta">FEATURES</span>
+            </h2>
+            <p className="text-base md:text-lg text-muted-foreground max-w-2xl mx-auto">
+              Everything you need to automate bug detection and patch generation
+            </p>
+          </motion.div>
 
-          {/* Step 3: Generate Test */}
-          {canGenerateTest && (
-            <section>
-              <div className="mb-4 flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-600 text-sm font-semibold text-white">
-                    3
-                  </div>
-                  <h2 className="text-2xl font-semibold text-gray-900">Generate Playwright Test</h2>
-                </div>
-                <button
-                  onClick={generateTest}
-                  disabled={steps[WorkflowStep.TEST].status === "loading"}
-                  className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-700 disabled:opacity-50"
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {[
+              {
+                icon: Video,
+                title: "Video Analysis",
+                description: "Automatically extract UI states and user interactions from screen recordings"
+              },
+              {
+                icon: Bot,
+                title: "AI-Powered",
+                description: "Powered by Gemini 3 for intelligent bug detection and analysis"
+              },
+              {
+                icon: CheckCircle2,
+                title: "Test Generation",
+                description: "Generate production-ready Playwright tests automatically"
+              },
+              {
+                icon: Wrench,
+                title: "Patch Suggestions",
+                description: "Get AI-generated fix suggestions with code modifications"
+              },
+              {
+                icon: Zap,
+                title: "Lightning Fast",
+                description: "Process bugs in seconds, not hours"
+              },
+              {
+                icon: BarChart3,
+                title: "Detailed Reports",
+                description: "Comprehensive reports with reproduction steps and metrics"
+              }
+            ].map((feature, index) => {
+              const Icon = feature.icon;
+              return (
+                <motion.div
+                  key={index}
+                  className="p-6 bg-card/50 backdrop-blur-sm border-2 border-border/30 hover:border-[var(--neon-cyan)] rounded-lg transition-all"
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: index * 0.1 }}
+                  whileHover={{ scale: 1.05, y: -5 }}
                 >
-                  {steps[WorkflowStep.TEST].status === "loading" ? "Generating..." : "Generate Test"}
-                </button>
-              </div>
-            </section>
-          )}
-
-          {/* Step 4: Test Code */}
-          {(steps[WorkflowStep.TEST].status !== "idle" || data.test) && (
-            <section>
-              <CodePanel
-                title="Generated Playwright Test"
-                code={data.test?.playwrightSpec}
-                isLoading={steps[WorkflowStep.TEST].status === "loading"}
-                error={steps[WorkflowStep.TEST].error}
-                onRetry={() => retry(WorkflowStep.TEST)}
-              />
-            </section>
-          )}
-
-          {/* Step 5: Run Test */}
-          {canRunTest && (
-            <section>
-              <div className="mb-4 flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-600 text-sm font-semibold text-white">
-                    4
-                  </div>
-                  <h2 className="text-2xl font-semibold text-gray-900">Run Test</h2>
-                </div>
-                <button
-                  onClick={runTest}
-                  disabled={steps[WorkflowStep.RUN].status === "loading"}
-                  className="rounded-md bg-green-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-green-700 disabled:opacity-50"
-                >
-                  {steps[WorkflowStep.RUN].status === "loading" ? "Running..." : "Run Test"}
-                </button>
-              </div>
-            </section>
-          )}
-
-          {/* Step 6: Test Results */}
-          {(steps[WorkflowStep.RUN].status !== "idle" || data.runResult) && (
-            <section>
-              <RunOutputPanel
-                status={data.runResult?.status}
-                stdout={data.runResult?.stdout}
-                stderr={data.runResult?.stderr}
-                screenshotUrl={data.runResult?.screenshotUrl}
-                isLoading={steps[WorkflowStep.RUN].status === "loading"}
-                error={steps[WorkflowStep.RUN].error}
-                onRetry={() => retry(WorkflowStep.RUN)}
-              />
-            </section>
-          )}
-
-          {/* Step 7: Generate Patch */}
-          {canGeneratePatch && (
-            <section>
-              <div className="mb-4 flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-600 text-sm font-semibold text-white">
-                    5
-                  </div>
-                  <h2 className="text-2xl font-semibold text-gray-900">Generate Fix Patch</h2>
-                </div>
-                <button
-                  onClick={generatePatch}
-                  disabled={steps[WorkflowStep.PATCH].status === "loading"}
-                  className="rounded-md bg-purple-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-purple-700 disabled:opacity-50"
-                >
-                  {steps[WorkflowStep.PATCH].status === "loading" ? "Generating..." : "Generate Patch"}
-                </button>
-              </div>
-            </section>
-          )}
-
-          {/* Step 8: Patch Diff */}
-          {(steps[WorkflowStep.PATCH].status !== "idle" || data.patch) && (
-            <section>
-              <CodePanel
-                title="Suggested Fix Patch"
-                code={data.patch?.diff}
-                isLoading={steps[WorkflowStep.PATCH].status === "loading"}
-                error={steps[WorkflowStep.PATCH].error}
-                onRetry={() => retry(WorkflowStep.PATCH)}
-              />
-              {data.patch && (
-                <div className="mt-4 space-y-2 rounded-lg border border-gray-200 bg-white p-4">
-                  <h3 className="text-sm font-semibold text-gray-800">Rationale:</h3>
-                  <p className="text-sm text-gray-700">{data.patch.rationale}</p>
-                  {data.patch.risks.length > 0 && (
-                    <div className="mt-3">
-                      <h4 className="text-sm font-semibold text-gray-800">Risks:</h4>
-                      <ul className="mt-1 list-disc space-y-1 pl-5 text-sm text-gray-700">
-                        {data.patch.risks.map((risk, index) => (
-                          <li key={index}>{risk}</li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
-                </div>
-              )}
-            </section>
-          )}
-
-          {/* Step 9: Export */}
-          {canExport && (
-            <section>
-              <div className="mb-4 flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-600 text-sm font-semibold text-white">
-                    6
-                  </div>
-                  <h2 className="text-2xl font-semibold text-gray-900">Export Bug Report</h2>
-                </div>
-                <button
-                  onClick={exportBugReport}
-                  disabled={steps[WorkflowStep.EXPORT].status === "loading"}
-                  className="rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-indigo-700 disabled:opacity-50"
-                >
-                  {steps[WorkflowStep.EXPORT].status === "loading" ? "Generating..." : "Generate Report"}
-                </button>
-              </div>
-            </section>
-          )}
-
-          {/* Export Panel */}
-          {data.bugReport && (
-            <section>
-              <ExportPanel
-                bugReport={data.bugReport.markdown}
-                isLoading={steps[WorkflowStep.EXPORT].status === "loading"}
-                error={steps[WorkflowStep.EXPORT].error}
-                onRetry={() => retry(WorkflowStep.EXPORT)}
-              />
-            </section>
-          )}
+                  <Icon className="w-10 h-10 mb-3 text-[var(--neon-cyan)]" />
+                  <h3 className="text-lg font-bold mb-2" style={{ fontFamily: 'var(--font-display)' }}>
+                    {feature.title}
+                  </h3>
+                  <p className="text-sm text-muted-foreground">
+                    {feature.description}
+                  </p>
+                </motion.div>
+              );
+            })}
+          </div>
         </div>
-      </main>
+      </section>
+
+      {/* Workflow Visualization Section */}
+      <section id="workflow" className="relative z-10 py-12 md:py-24 border-t border-border/30">
+        <div className="container mx-auto px-4 md:px-8">
+          <motion.div 
+            className="text-center mb-12 md:mb-16"
+            initial={{ opacity: 0, y: 50 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-100px" }}
+            transition={{ duration: 0.6 }}
+          >
+            <h2 
+              className="text-4xl md:text-5xl font-bold mb-4"
+              style={{ fontFamily: 'var(--font-display)' }}
+            >
+              PIPELINE <span className="text-gradient-cyan">ARCHITECTURE</span>
+            </h2>
+            <p className="text-base md:text-lg text-muted-foreground max-w-2xl mx-auto">
+              Seven-stage automated processing from video to production-ready patch
+            </p>
+          </motion.div>
+
+          <div className="max-w-6xl mx-auto">
+            <WorkflowVisualizationImproved />
+          </div>
+        </div>
+      </section>
+
+      {/* Interactive Demo Section */}
+      <section id="demo" className="relative z-10 py-12 md:py-24 border-t border-border/30">
+        <div className="container mx-auto px-4 md:px-8">
+          <motion.div 
+            className="text-center mb-12 md:mb-16"
+            initial={{ opacity: 0, y: 50 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-100px" }}
+            transition={{ duration: 0.6 }}
+          >
+            <h2 
+              className="text-4xl md:text-5xl font-bold mb-4"
+              style={{ fontFamily: 'var(--font-display)' }}
+            >
+              INTERACTIVE <span className="text-gradient-lime">DEMO</span>
+            </h2>
+            <p className="text-base md:text-lg text-muted-foreground max-w-2xl mx-auto">
+              Experience the complete workflow in real-time
+            </p>
+          </motion.div>
+
+          <div className="max-w-4xl mx-auto">
+            <DemoWorkflow />
+          </div>
+        </div>
+      </section>
+
+      {/* Code Examples Section */}
+      <section className="relative z-10 py-12 md:py-24 border-t border-border/30">
+        <div className="container mx-auto px-4 md:px-8">
+          <motion.div 
+            className="text-center mb-12 md:mb-16"
+            initial={{ opacity: 0, y: 50 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-100px" }}
+            transition={{ duration: 0.6 }}
+          >
+            <h2 
+              className="text-4xl md:text-5xl font-bold mb-4"
+              style={{ fontFamily: 'var(--font-display)' }}
+            >
+              CODE <span className="text-gradient-magenta">EXAMPLES</span>
+            </h2>
+            <p className="text-base md:text-lg text-muted-foreground max-w-2xl mx-auto">
+              See the quality of generated tests and patches
+            </p>
+          </motion.div>
+
+          <div className="max-w-4xl mx-auto">
+            <MacOSCodeEditor />
+          </div>
+        </div>
+      </section>
+
+      {/* Creator Section */}
+      <CreatorSection />
 
       {/* Footer */}
-      <footer className="mt-12 border-t border-gray-200 bg-white py-6">
-        <div className="mx-auto max-w-7xl px-4 text-center text-sm text-gray-600 sm:px-6 lg:px-8">
-          <p>
-            <strong>PatchPilot</strong> — Transform bug recordings into fixes with Gemini 3
-          </p>
+      <motion.footer
+        className="relative z-10 border-t border-border/30 bg-muted/5 backdrop-blur-sm"
+        initial={{ opacity: 0 }}
+        whileInView={{ opacity: 1 }}
+        viewport={{ once: true }}
+        transition={{ duration: 0.6 }}
+      >
+        <div className="container mx-auto px-4 md:px-8 py-12 md:py-16">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-12">
+            <div>
+              <h3 className="font-bold mb-4" style={{ fontFamily: 'var(--font-display)' }}>PRODUCT</h3>
+              <ul className="space-y-2 text-sm text-muted-foreground">
+                <li><a href="#" className="hover:text-foreground transition">Features</a></li>
+                <li><a href="#" className="hover:text-foreground transition">Pricing</a></li>
+                <li><a href="#" className="hover:text-foreground transition">API</a></li>
+              </ul>
+            </div>
+            <div>
+              <h3 className="font-bold mb-4" style={{ fontFamily: 'var(--font-display)' }}>COMPANY</h3>
+              <ul className="space-y-2 text-sm text-muted-foreground">
+                <li><a href="#" className="hover:text-foreground transition">About</a></li>
+                <li><a href="#" className="hover:text-foreground transition">Blog</a></li>
+                <li><a href="#" className="hover:text-foreground transition">Contact</a></li>
+              </ul>
+            </div>
+            <div>
+              <h3 className="font-bold mb-4" style={{ fontFamily: 'var(--font-display)' }}>LEGAL</h3>
+              <ul className="space-y-2 text-sm text-muted-foreground">
+                <li><a href="#" className="hover:text-foreground transition">Privacy</a></li>
+                <li><a href="#" className="hover:text-foreground transition">Terms</a></li>
+                <li><a href="#" className="hover:text-foreground transition">Security</a></li>
+              </ul>
+            </div>
+            <div>
+              <h3 className="font-bold mb-4" style={{ fontFamily: 'var(--font-display)' }}>SOCIAL</h3>
+              <ul className="space-y-2 text-sm text-muted-foreground">
+                <li><a href="#" className="hover:text-foreground transition">Twitter</a></li>
+                <li><a href="#" className="hover:text-foreground transition">GitHub</a></li>
+                <li><a href="#" className="hover:text-foreground transition">Discord</a></li>
+              </ul>
+            </div>
+          </div>
+
+          <div className="border-t border-border/30 pt-8 flex flex-col md:flex-row items-center justify-between text-sm text-muted-foreground">
+            <div>© 2026 PatchPilot. All rights reserved.</div>
+            <div className="mt-4 md:mt-0">Built with precision. Powered by Gemini 3.</div>
+          </div>
         </div>
-      </footer>
+      </motion.footer>
     </div>
   );
 }

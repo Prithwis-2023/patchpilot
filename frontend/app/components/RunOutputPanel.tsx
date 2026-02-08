@@ -1,6 +1,8 @@
 "use client";
 
 import Image from "next/image";
+import { useCopyFeedback } from "../lib/useCopyFeedback";
+import { config } from "../lib/config";
 
 interface RunOutputPanelProps {
   status?: "running" | "success" | "failed";
@@ -21,37 +23,61 @@ export default function RunOutputPanel({
   error,
   onRetry,
 }: RunOutputPanelProps) {
+  const { copied, copyToClipboard } = useCopyFeedback();
+
+  const handleCopyLogs = () => {
+    const logs = [stdout, stderr].filter(Boolean).join("\n\n--- Errors ---\n\n");
+    if (logs) {
+      copyToClipboard(logs);
+    }
+  };
+
   return (
-    <div className="w-full rounded-lg border border-gray-200 bg-white p-6">
-      <h2 className="mb-4 text-xl font-semibold text-gray-800">Test Run Results</h2>
+    <div className="card w-full rounded-lg p-6">
+      <h2 className="mb-4 text-xl font-semibold text-primary">Test Run Results</h2>
       {error ? (
-        <div className="space-y-2">
-          <p className="text-sm text-red-600">{error}</p>
+        <div className="space-y-3">
+          <div className="card rounded-md p-4" style={{ borderColor: "var(--danger)" }}>
+            <p className="text-sm font-medium" style={{ color: "var(--danger)" }}>Error running test</p>
+            <p className="mt-1 text-sm" style={{ color: "var(--danger)" }}>{error}</p>
+          </div>
           {onRetry && (
             <button
               onClick={onRetry}
-              className="rounded-md bg-red-100 px-3 py-1.5 text-sm font-medium text-red-700 transition-colors hover:bg-red-200"
+              className="btn-secondary rounded-md px-3 py-1.5 text-sm font-medium"
+              style={{ backgroundColor: "var(--danger)", color: "var(--surface-1)" }}
             >
               Retry
             </button>
           )}
+          {config.isDevelopment && (
+            <details className="mt-2">
+              <summary className="cursor-pointer text-xs" style={{ color: "var(--danger)" }}>Show technical details</summary>
+              <pre className="mt-2 overflow-x-auto rounded p-2 text-xs" style={{ backgroundColor: "var(--danger)", opacity: 0.1, color: "var(--danger)" }}>
+                {error}
+              </pre>
+            </details>
+          )}
         </div>
       ) : isLoading ? (
-        <div className="flex items-center gap-2 text-gray-500">
-          <div className="h-4 w-4 animate-spin rounded-full border-2 border-gray-300 border-t-blue-600"></div>
-          <span>Running test...</span>
+        <div className="flex items-center gap-2 text-muted">
+          <div className="h-4 w-4 animate-spin rounded-full border-2" style={{ borderColor: "var(--border)", borderTopColor: "var(--accent)" }}></div>
+          <span>Running test... capturing screenshot...</span>
         </div>
       ) : status ? (
         <div className="space-y-4">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center justify-between">
             <span
-              className={`rounded-full px-3 py-1 text-sm font-medium ${
-                status === "success"
-                  ? "bg-green-100 text-green-800"
-                  : status === "failed"
-                    ? "bg-red-100 text-red-800"
-                    : "bg-yellow-100 text-yellow-800"
-              }`}
+              className="rounded-full px-3 py-1 text-sm font-medium"
+              style={{
+                backgroundColor:
+                  status === "success"
+                    ? "var(--success)"
+                    : status === "failed"
+                      ? "var(--danger)"
+                      : "var(--warning)",
+                color: "var(--surface-1)",
+              }}
             >
               {status === "success"
                 ? "✓ Passed"
@@ -59,39 +85,55 @@ export default function RunOutputPanel({
                   ? "✗ Failed"
                   : "Running..."}
             </span>
+            {(stdout || stderr) && (
+              <div className="flex items-center gap-2">
+                {copied && <span className="text-sm" style={{ color: "var(--success)" }}>Copied!</span>}
+                <button
+                  onClick={handleCopyLogs}
+                  className="btn-secondary rounded-md px-3 py-1.5 text-sm font-medium"
+                >
+                  Copy Logs
+                </button>
+              </div>
+            )}
           </div>
           {stdout && (
             <div>
-              <h3 className="mb-2 text-sm font-semibold text-gray-700">Output:</h3>
-              <pre className="overflow-x-auto rounded-md bg-gray-900 p-4">
-                <code className="font-mono text-sm text-gray-100">{stdout}</code>
+              <h3 className="mb-2 text-sm font-semibold text-primary">Output:</h3>
+              <pre className="overflow-x-auto rounded-md p-4" style={{ backgroundColor: "var(--surface-3)" }}>
+                <code className="font-mono text-sm text-primary">{stdout}</code>
               </pre>
             </div>
           )}
           {stderr && (
             <div>
-              <h3 className="mb-2 text-sm font-semibold text-red-700">Errors:</h3>
-              <pre className="overflow-x-auto rounded-md bg-red-50 p-4">
-                <code className="font-mono text-sm text-red-800">{stderr}</code>
+              <h3 className="mb-2 text-sm font-semibold" style={{ color: "var(--danger)" }}>Errors:</h3>
+              <pre className="overflow-x-auto rounded-md p-4" style={{ backgroundColor: "var(--danger)", opacity: 0.1 }}>
+                <code className="font-mono text-sm" style={{ color: "var(--danger)" }}>{stderr}</code>
               </pre>
             </div>
           )}
           {screenshotUrl && (
             <div>
-              <h3 className="mb-2 text-sm font-semibold text-gray-700">Screenshot:</h3>
+              <h3 className="mb-2 text-sm font-semibold text-primary">Screenshot:</h3>
               <div className="relative h-64 w-full">
                 <Image
                   src={screenshotUrl}
                   alt="Test failure screenshot"
                   fill
-                  className="rounded-md border border-gray-200 object-contain"
+                  className="rounded-md border border-soft object-contain"
                 />
               </div>
             </div>
           )}
         </div>
       ) : (
-        <p className="text-gray-400">No test run results yet.</p>
+        <div className="card rounded-md p-4 text-center">
+          <p className="text-sm text-muted">
+            Test run results will appear here, including output, errors, and a screenshot (if available)
+            after the test executes.
+          </p>
+        </div>
       )}
     </div>
   );

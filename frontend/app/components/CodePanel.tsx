@@ -1,5 +1,11 @@
 "use client";
 
+import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { useCopyFeedback } from "../lib/useCopyFeedback";
+import { config } from "../lib/config";
+import { fadeSlide, pop, buttonHover, buttonPress } from "../lib/motion";
+
 interface CodePanelProps {
   title: string;
   code?: string;
@@ -15,48 +21,131 @@ export default function CodePanel({
   error,
   onRetry,
 }: CodePanelProps) {
+  const { copied, copyToClipboard } = useCopyFeedback();
+  const [hoveredLine, setHoveredLine] = useState<number | null>(null);
+
   const handleCopy = () => {
     if (code) {
-      navigator.clipboard.writeText(code);
+      copyToClipboard(code);
     }
   };
 
+  const lines = code?.split("\n") || [];
+
   return (
-    <div className="w-full rounded-lg border border-gray-200 bg-white p-6">
+    <div className="card w-full rounded-lg p-6">
       <div className="mb-4 flex items-center justify-between">
-        <h2 className="text-xl font-semibold text-gray-800">{title}</h2>
+        <h2 className="text-xl font-semibold text-primary">{title}</h2>
         {code && (
-          <button
-            onClick={handleCopy}
-            className="rounded-md bg-gray-100 px-3 py-1.5 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-200"
-          >
-            Copy
-          </button>
+          <div className="flex items-center gap-2">
+            <AnimatePresence mode="wait">
+              {copied && (
+                <motion.span
+                  key="copied"
+                  initial="hidden"
+                  animate="visible"
+                  exit="exit"
+                  variants={pop}
+                  className="text-sm font-medium"
+                  style={{ color: "var(--success)" }}
+                >
+                  ✓ Copied!
+                </motion.span>
+              )}
+            </AnimatePresence>
+            <motion.button
+              onClick={handleCopy}
+              whileHover={buttonHover}
+              whileTap={buttonPress}
+              className="btn-secondary relative overflow-hidden rounded-md px-3 py-1.5 text-sm font-medium"
+            >
+              <span className="relative z-10">Copy</span>
+              <motion.div
+                className="absolute inset-0 bg-gradient-to-r from-transparent via-white to-transparent opacity-30"
+                initial={{ x: "-100%" }}
+                whileHover={{ x: "100%" }}
+                transition={{ duration: 0.5 }}
+              />
+            </motion.button>
+          </div>
         )}
       </div>
       {error ? (
-        <div className="space-y-2">
-          <p className="text-sm text-red-600">{error}</p>
+        <motion.div
+          initial="hidden"
+          animate="visible"
+          variants={fadeSlide}
+          className="space-y-3"
+        >
+          <div className="card rounded-md p-4" style={{ borderColor: "var(--danger)" }}>
+            <p className="text-sm font-medium" style={{ color: "var(--danger)" }}>Error generating {title.toLowerCase()}</p>
+            <p className="mt-1 text-sm" style={{ color: "var(--danger)" }}>{error}</p>
+          </div>
           {onRetry && (
-            <button
+            <motion.button
               onClick={onRetry}
-              className="rounded-md bg-red-100 px-3 py-1.5 text-sm font-medium text-red-700 transition-colors hover:bg-red-200"
+              whileHover={buttonHover}
+              whileTap={buttonPress}
+              className="btn-secondary rounded-md px-3 py-1.5 text-sm font-medium"
+              style={{ backgroundColor: "var(--danger)", color: "var(--surface-1)" }}
             >
               Retry
-            </button>
+            </motion.button>
           )}
-        </div>
+          {config.isDevelopment && (
+            <details className="mt-2">
+              <summary className="cursor-pointer text-xs" style={{ color: "var(--danger)" }}>Show technical details</summary>
+              <pre className="mt-2 overflow-x-auto rounded p-2 text-xs" style={{ backgroundColor: "var(--danger)", opacity: 0.1, color: "var(--danger)" }}>
+                {error}
+              </pre>
+            </details>
+          )}
+        </motion.div>
       ) : isLoading ? (
-        <div className="flex items-center gap-2 text-gray-500">
-          <div className="h-4 w-4 animate-spin rounded-full border-2 border-gray-300 border-t-blue-600"></div>
-          <span>Generating {title.toLowerCase()}...</span>
+        <div className="flex items-center gap-2 text-muted">
+          <div className="h-4 w-4 animate-spin rounded-full border-2" style={{ borderColor: "var(--border)", borderTopColor: "var(--accent)" }}></div>
+          <span>
+            {title.includes("Test")
+              ? "Writing Playwright test..."
+              : title.includes("Patch")
+                ? "Generating fix patch..."
+                : `Generating ${title.toLowerCase()}...`}
+          </span>
         </div>
       ) : code ? (
-        <pre className="overflow-x-auto rounded-md bg-gray-900 p-4">
-          <code className={`font-mono text-sm text-gray-100`}>{code}</code>
-        </pre>
+        <motion.pre
+          initial="hidden"
+          animate="visible"
+          variants={fadeSlide}
+          className="overflow-x-auto rounded-md p-4"
+          style={{ backgroundColor: "var(--surface-3)" }}
+        >
+          <code className="font-mono text-sm text-primary">
+            {lines.map((line, index) => (
+              <motion.div
+                key={index}
+                onMouseEnter={() => setHoveredLine(index)}
+                onMouseLeave={() => setHoveredLine(null)}
+                className="px-2 py-0.5 transition-colors"
+                style={{
+                  backgroundColor: hoveredLine === index ? "var(--border)" : undefined,
+                }}
+              >
+                <span className="select-all">{line || " "}</span>
+              </motion.div>
+            ))}
+          </code>
+        </motion.pre>
       ) : (
-        <p className="text-gray-400">No {title.toLowerCase()} yet.</p>
+        <div className="card rounded-md p-4 text-center">
+          <p className="text-sm text-muted">
+            {title.includes("Test")
+              ? "A runnable Playwright test will be generated here after analysis."
+              : title.includes("Patch")
+                ? "A unified diff patch with suggested fixes will appear here after test execution."
+                : `No ${title.toLowerCase()} yet.`}
+          </p>
+        </div>
       )}
     </div>
   );

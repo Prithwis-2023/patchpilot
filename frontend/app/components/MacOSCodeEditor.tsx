@@ -1,0 +1,148 @@
+"use client";
+
+import { motion } from "framer-motion";
+import { Card } from "@/app/components/ui/card";
+
+/* 
+  Design Philosophy: Cybernetic Brutalism
+  macOS-style code editor with blue tinted backdrop
+*/
+
+interface MacOSCodeEditorProps {
+  codeSnippet?: string;
+}
+
+export default function MacOSCodeEditor({ codeSnippet: propCodeSnippet }: MacOSCodeEditorProps = {}) {
+  const defaultCodeSnippet = `// Generated Playwright Test
+import { test, expect } from '@playwright/test';
+
+test('should enable login button when email is valid', async ({ page }) => {
+  await page.goto('https://app.example.com/login');
+  
+  // Initial state: button disabled
+  const loginBtn = page.locator('button:has-text("Login")');
+  await expect(loginBtn).toBeDisabled();
+  
+  // Enter email
+  await page.fill('input[type="email"]', 'user@example.com');
+  
+  // Button should now be enabled
+  await expect(loginBtn).toBeEnabled();
+  
+  // Click and verify navigation
+  await loginBtn.click();
+  await expect(page).toHaveURL(/\\/dashboard/);
+});`;
+
+  const codeSnippet = propCodeSnippet || defaultCodeSnippet;
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 30 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }}
+      transition={{ duration: 0.6 }}
+      className="relative"
+    >
+      {/* Blue tinted backdrop */}
+      <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 via-blue-600/5 to-blue-700/10 rounded-xl blur-xl -z-10" />
+
+      <Card className="p-0 bg-gradient-to-br from-slate-900 to-slate-950 border border-slate-700/50 overflow-hidden">
+        {/* macOS Window Header */}
+        <div className="bg-gradient-to-b from-slate-800 to-slate-900 px-6 py-4 border-b border-slate-700/50 flex items-center justify-between">
+          {/* Traffic lights */}
+          <div className="flex gap-3">
+            <motion.div
+              className="w-3 h-3 bg-red-500 rounded-full cursor-pointer"
+              whileHover={{ scale: 1.2 }}
+              whileTap={{ scale: 0.9 }}
+            />
+            <motion.div
+              className="w-3 h-3 bg-yellow-500 rounded-full cursor-pointer"
+              whileHover={{ scale: 1.2 }}
+              whileTap={{ scale: 0.9 }}
+            />
+            <motion.div
+              className="w-3 h-3 bg-green-500 rounded-full cursor-pointer"
+              whileHover={{ scale: 1.2 }}
+              whileTap={{ scale: 0.9 }}
+            />
+          </div>
+
+          {/* Window title */}
+          <div className="flex-1 text-center">
+            <span className="text-sm font-semibold text-slate-300">LoginForm.test.ts</span>
+          </div>
+
+          {/* Spacer for alignment */}
+          <div className="w-12" />
+        </div>
+
+        {/* Code Editor */}
+        <div className="p-6 font-mono text-sm bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 overflow-x-auto">
+          <div className="space-y-1">
+            {codeSnippet.split('\n').map((line, index) => {
+              // Simple syntax highlighting
+              let color = 'text-slate-400';
+
+              if (line.includes('//')) color = 'text-slate-500';
+              if (line.includes('import') || line.includes('from')) color = 'text-blue-400';
+              if (line.includes('test') || line.includes('expect')) color = 'text-cyan-300';
+              if (line.includes('async') || line.includes('await')) color = 'text-pink-400';
+              if (line.includes('const') || line.includes('let')) color = 'text-purple-400';
+
+              return (
+                <motion.div
+                  key={index}
+                  className="flex gap-4"
+                  initial={{ opacity: 0, x: -20 }}
+                  whileInView={{ opacity: 1, x: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: index * 0.02 }}
+                >
+                  {/* Line number */}
+                  <span className="text-slate-600 select-none w-8 text-right">
+                    {String(index + 1).padStart(2, ' ')}
+                  </span>
+
+                  {/* Code line with syntax highlighting */}
+                  <span className={`flex-1 ${color}`}>
+                    {line.replace(/\s+$/g, '')}
+                  </span>
+                </motion.div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Status bar */}
+        <div className="bg-slate-950 border-t border-slate-700/50 px-6 py-3 flex items-center justify-between text-xs text-slate-400">
+          <div className="flex gap-6">
+            <span>Ln 24, Col 1</span>
+            <span>UTF-8</span>
+            <span>LF</span>
+          </div>
+          <motion.div
+            className="flex items-center gap-2"
+            animate={{ opacity: [0.5, 1, 0.5] }}
+            transition={{ duration: 2, repeat: Infinity }}
+          >
+            <div className="w-2 h-2 bg-green-500 rounded-full" />
+            <span>Generated by PatchPilot</span>
+          </motion.div>
+        </div>
+      </Card>
+
+      {/* Floating annotation */}
+      <motion.div
+        className="absolute -top-12 -right-12 px-4 py-2 bg-gradient-to-r from-blue-500 to-cyan-500 text-white text-xs font-bold rounded-lg"
+        initial={{ opacity: 0, scale: 0.8 }}
+        whileInView={{ opacity: 1, scale: 1 }}
+        viewport={{ once: true }}
+        transition={{ delay: 0.5 }}
+      >
+        Agent Tests
+      </motion.div>
+    </motion.div>
+  );
+}

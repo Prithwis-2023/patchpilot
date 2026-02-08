@@ -1,15 +1,27 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { JetBrains_Mono, IBM_Plex_Sans, Fira_Code } from "next/font/google";
 import "./globals.css";
+import DynamicBackground from "./components/DynamicBackground";
+import FloatingParticles from "./components/FloatingParticles";
+import CustomCursor from "./components/CustomCursor";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const jetbrainsMono = JetBrains_Mono({
+  variable: "--font-display",
   subsets: ["latin"],
+  display: "swap",
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const ibmPlexSans = IBM_Plex_Sans({
+  variable: "--font-body",
   subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  display: "swap",
+});
+
+const firaCode = Fira_Code({
+  variable: "--font-code",
+  subsets: ["latin"],
+  display: "swap",
 });
 
 export const metadata: Metadata = {
@@ -23,11 +35,33 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                // Always use dark theme for cybernetic brutalism design
+                document.documentElement.classList.add('dark');
+              })();
+            `,
+          }}
+        />
+      </head>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${jetbrainsMono.variable} ${ibmPlexSans.variable} ${firaCode.variable} antialiased bg-background text-foreground`}
       >
-        {children}
+        {/* Global background layers */}
+        <div className="fixed inset-0 diagonal-grid opacity-30 pointer-events-none z-0" />
+        <div className="fixed inset-0 scanlines pointer-events-none z-0" />
+        <DynamicBackground />
+        <FloatingParticles />
+        <CustomCursor />
+        
+        {/* Main content */}
+        <div className="relative z-10 min-h-screen">
+          {children}
+        </div>
       </body>
     </html>
   );

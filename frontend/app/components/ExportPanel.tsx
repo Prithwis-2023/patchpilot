@@ -1,5 +1,8 @@
 "use client";
 
+import { useCopyFeedback } from "../lib/useCopyFeedback";
+import { config } from "../lib/config";
+
 interface ExportPanelProps {
   bugReport?: string;
   isLoading?: boolean;
@@ -13,6 +16,8 @@ export default function ExportPanel({
   error,
   onRetry,
 }: ExportPanelProps) {
+  const { copied, copyToClipboard } = useCopyFeedback();
+
   const handleDownload = () => {
     if (bugReport) {
       const blob = new Blob([bugReport], { type: "text/markdown" });
@@ -27,44 +32,76 @@ export default function ExportPanel({
     }
   };
 
+  const handleCopy = () => {
+    if (bugReport) {
+      copyToClipboard(bugReport);
+    }
+  };
+
   return (
-    <div className="w-full rounded-lg border border-gray-200 bg-white p-6">
+    <div className="card w-full rounded-lg p-6">
       <div className="mb-4 flex items-center justify-between">
-        <h2 className="text-xl font-semibold text-gray-800">Bug Report Export</h2>
+        <h2 className="text-xl font-semibold text-primary">Bug Report Export</h2>
         {bugReport && (
-          <button
-            onClick={handleDownload}
-            className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-700"
-          >
-            Download Markdown
-          </button>
+          <div className="flex items-center gap-2">
+            {copied && <span className="text-sm" style={{ color: "var(--success)" }}>Copied!</span>}
+            <button
+              onClick={handleCopy}
+              className="btn-secondary rounded-md px-3 py-1.5 text-sm font-medium"
+            >
+              Copy Markdown
+            </button>
+            <button
+              onClick={handleDownload}
+              className="btn-primary rounded-md px-4 py-2 text-sm font-medium"
+            >
+              Download Markdown
+            </button>
+          </div>
         )}
       </div>
       {error ? (
-        <div className="space-y-2">
-          <p className="text-sm text-red-600">{error}</p>
+        <div className="space-y-3">
+          <div className="card rounded-md p-4" style={{ borderColor: "var(--danger)" }}>
+            <p className="text-sm font-medium" style={{ color: "var(--danger)" }}>Error generating bug report</p>
+            <p className="mt-1 text-sm" style={{ color: "var(--danger)" }}>{error}</p>
+          </div>
           {onRetry && (
             <button
               onClick={onRetry}
-              className="rounded-md bg-red-100 px-3 py-1.5 text-sm font-medium text-red-700 transition-colors hover:bg-red-200"
+              className="btn-secondary rounded-md px-3 py-1.5 text-sm font-medium"
+              style={{ backgroundColor: "var(--danger)", color: "var(--surface-1)" }}
             >
               Retry
             </button>
           )}
+          {config.isDevelopment && (
+            <details className="mt-2">
+              <summary className="cursor-pointer text-xs" style={{ color: "var(--danger)" }}>Show technical details</summary>
+              <pre className="mt-2 overflow-x-auto rounded p-2 text-xs" style={{ backgroundColor: "var(--danger)", opacity: 0.1, color: "var(--danger)" }}>
+                {error}
+              </pre>
+            </details>
+          )}
         </div>
       ) : isLoading ? (
-        <div className="flex items-center gap-2 text-gray-500">
-          <div className="h-4 w-4 animate-spin rounded-full border-2 border-gray-300 border-t-blue-600"></div>
+        <div className="flex items-center gap-2 text-muted">
+          <div className="h-4 w-4 animate-spin rounded-full border-2" style={{ borderColor: "var(--border)", borderTopColor: "var(--accent)" }}></div>
           <span>Generating report...</span>
         </div>
       ) : bugReport ? (
-        <div className="rounded-md border border-gray-200 bg-gray-50 p-4">
-          <pre className="whitespace-pre-wrap font-mono text-sm text-gray-700">
+        <div className="card rounded-md p-4">
+          <pre className="whitespace-pre-wrap font-mono text-sm text-primary">
             {bugReport}
           </pre>
         </div>
       ) : (
-        <p className="text-gray-400">No bug report available yet.</p>
+        <div className="card rounded-md p-4 text-center">
+          <p className="text-sm text-muted">
+            A complete bug report in Markdown format will be generated here after patch generation,
+            ready for download or copy.
+          </p>
+        </div>
       )}
     </div>
   );
