@@ -1,20 +1,36 @@
 "use client";
 
-interface Step {
-  number: number;
-  description: string;
-}
+import type { ReproductionStep } from "../lib/types";
 
 interface StepsPanelProps {
-  steps?: Step[];
+  steps?: ReproductionStep[];
   isLoading?: boolean;
+  error?: string | null;
+  onRetry?: () => void;
 }
 
-export default function StepsPanel({ steps, isLoading = false }: StepsPanelProps) {
+export default function StepsPanel({
+  steps,
+  isLoading = false,
+  error,
+  onRetry,
+}: StepsPanelProps) {
   return (
     <div className="w-full rounded-lg border border-gray-200 bg-white p-6">
       <h2 className="mb-4 text-xl font-semibold text-gray-800">Reproduction Steps</h2>
-      {isLoading ? (
+      {error ? (
+        <div className="space-y-2">
+          <p className="text-sm text-red-600">{error}</p>
+          {onRetry && (
+            <button
+              onClick={onRetry}
+              className="rounded-md bg-red-100 px-3 py-1.5 text-sm font-medium text-red-700 transition-colors hover:bg-red-200"
+            >
+              Retry
+            </button>
+          )}
+        </div>
+      ) : isLoading ? (
         <div className="flex items-center gap-2 text-gray-500">
           <div className="h-4 w-4 animate-spin rounded-full border-2 border-gray-300 border-t-blue-600"></div>
           <span>Generating steps...</span>

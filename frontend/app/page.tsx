@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { usePatchpilotWorkflow } from "./lib/usePatchpilotWorkflow";
+import { WorkflowStep } from "./lib/types";
 import UploadCard from "./components/UploadCard";
 import TimelinePanel from "./components/TimelinePanel";
 import StepsPanel from "./components/StepsPanel";
@@ -8,156 +9,75 @@ import CodePanel from "./components/CodePanel";
 import RunOutputPanel from "./components/RunOutputPanel";
 import ExportPanel from "./components/ExportPanel";
 
-type WorkflowState =
-  | "idle"
-  | "uploading"
-  | "analyzing"
-  | "generating-test"
-  | "running-test"
-  | "generating-patch"
-  | "completed"
-  | "error";
-
-interface TimelineEvent {
-  timestamp: string;
-  description: string;
-}
-
-interface Step {
-  number: number;
-  description: string;
-}
-
 export default function Home() {
-  const [state, setState] = useState<WorkflowState>("idle");
-  const [uploadedFile, setUploadedFile] = useState<File | null>(null);
-
-  // Placeholder data (will be replaced with real API data in Phase 3)
-  const [timelineEvents, setTimelineEvents] = useState<TimelineEvent[] | undefined>(undefined);
-  const [reproductionSteps, setReproductionSteps] = useState<Step[] | undefined>(undefined);
-  const [playwrightTest, setPlaywrightTest] = useState<string | undefined>(undefined);
-  const [testRunStatus, setTestRunStatus] = useState<
-    "running" | "success" | "failed" | undefined
-  >(undefined);
-  const [testStdout, setTestStdout] = useState<string | undefined>(undefined);
-  const [testStderr, setTestStderr] = useState<string | undefined>(undefined);
-  const [screenshotUrl, setScreenshotUrl] = useState<string | undefined>(undefined);
-  const [patchDiff, setPatchDiff] = useState<string | undefined>(undefined);
-  const [bugReport, setBugReport] = useState<string | undefined>(undefined);
+  const {
+    sampleMode,
+    setSampleMode,
+    uploadedFile,
+    steps,
+    data,
+    setVideo,
+    analyze,
+    generateTest,
+    runTest,
+    generatePatch,
+    exportBugReport,
+    retry,
+    reset,
+    canGenerateTest,
+    canRunTest,
+    canGeneratePatch,
+    canExport,
+  } = usePatchpilotWorkflow();
 
   const handleUpload = (file: File) => {
-    setUploadedFile(file);
-    setState("uploading");
-    // Simulate upload completion
+    setVideo(file);
+    // Auto-trigger analyze after upload
     setTimeout(() => {
-      setState("analyzing");
-      // Placeholder: will be replaced with real API call in Phase 3
-      setTimeout(() => {
-        setTimelineEvents([
-          { timestamp: "00:00", description: "Page loads" },
-          { timestamp: "00:05", description: "User clicks button" },
-          { timestamp: "00:10", description: "Error appears" },
-        ]);
-        setReproductionSteps([
-          { number: 1, description: "Navigate to the application" },
-          { number: 2, description: "Click on the submit button" },
-          { number: 3, description: "Observe the error message" },
-        ]);
-        setState("idle");
-      }, 2000);
-    }, 1000);
+      analyze();
+    }, 500);
   };
-
-  const handleGenerateTest = () => {
-    setState("generating-test");
-    // Placeholder: will be replaced with real API call in Phase 3
-    setTimeout(() => {
-      setPlaywrightTest(`import { test, expect } from '@playwright/test';
-
-test('bug reproduction', async ({ page }) => {
-  await page.goto('https://example.com');
-  await page.click('button[type="submit"]');
-  await expect(page.locator('.error')).toBeVisible();
-});`);
-      setState("idle");
-    }, 1500);
-  };
-
-  const handleRunTest = () => {
-    setState("running-test");
-    setTestRunStatus("running");
-    // Placeholder: will be replaced with real API call in Phase 3
-    setTimeout(() => {
-      setTestRunStatus("failed");
-      setTestStdout("Running test...");
-      setTestStderr("Error: Element not found");
-      setScreenshotUrl(undefined); // Will be populated from API
-      setState("idle");
-    }, 2000);
-  };
-
-  const handleGeneratePatch = () => {
-    setState("generating-patch");
-    // Placeholder: will be replaced with real API call in Phase 3
-    setTimeout(() => {
-      setPatchDiff(`--- a/src/component.tsx
-+++ b/src/component.tsx
-@@ -10,7 +10,7 @@ export function Component() {
-   return (
-     <div>
--      <button onClick={handleClick}>Submit</button>
-+      <button onClick={handleClick} disabled={isLoading}>Submit</button>
-     </div>
-   );
- }`);
-      setState("idle");
-    }, 1500);
-  };
-
-  const handleExport = () => {
-    // Placeholder: will be replaced with real API call in Phase 3
-    setBugReport(`# Bug Report
-
-## Timeline
-- 00:00: Page loads
-- 00:05: User clicks button
-- 00:10: Error appears
-
-## Reproduction Steps
-1. Navigate to the application
-2. Click on the submit button
-3. Observe the error message
-
-## Suggested Fix
-\`\`\`diff
---- a/src/component.tsx
-+++ b/src/component.tsx
-@@ -10,7 +10,7 @@ export function Component() {
-   return (
-     <div>
--      <button onClick={handleClick}>Submit</button>
-+      <button onClick={handleClick} disabled={isLoading}>Submit</button>
-     </div>
-   );
- }
-\`\`\`
-`);
-  };
-
-  const canGenerateTest = timelineEvents && reproductionSteps && state === "idle";
-  const canRunTest = playwrightTest && state === "idle";
-  const canGeneratePatch = testRunStatus === "failed" && state === "idle";
-  const canExport = patchDiff && state === "idle";
 
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
       <header className="border-b border-gray-200 bg-white">
         <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
-          <h1 className="text-3xl font-bold text-gray-900">PatchPilot</h1>
-          <p className="mt-1 text-sm text-gray-600">
-            Transform bug recordings into fixes with AI-powered analysis
-          </p>
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900">PatchPilot</h1>
+              <p className="mt-1 text-sm text-gray-600">
+                Transform bug recordings into fixes with AI-powered analysis
+              </p>
+            </div>
+            <div className="flex items-center gap-4">
+              <label className="flex cursor-pointer items-center gap-2">
+                <input
+                  type="checkbox"
+                  checked={sampleMode}
+                  onChange={(e) => setSampleMode(e.target.checked)}
+                  className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                />
+                <span className="text-sm font-medium text-gray-700">Sample Mode</span>
+              </label>
+              {(uploadedFile || data.analysis) && (
+                <button
+                  onClick={reset}
+                  className="rounded-md bg-gray-200 px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-300"
+                >
+                  Reset
+                </button>
+              )}
+            </div>
+          </div>
+          {sampleMode && (
+            <div className="mt-3 rounded-md bg-blue-50 p-3">
+              <p className="text-sm text-blue-800">
+                <strong>Sample Mode ON:</strong> Using sample data for demonstration. No API calls
+                will be made.
+              </p>
+            </div>
+          )}
         </div>
       </header>
 
@@ -174,7 +94,7 @@ test('bug reproduction', async ({ page }) => {
             </div>
             <UploadCard
               onUpload={handleUpload}
-              isUploading={state === "uploading" || state === "analyzing"}
+              isUploading={steps[WorkflowStep.UPLOAD].status === "loading"}
             />
             {uploadedFile && (
               <p className="mt-2 text-sm text-gray-600">
@@ -184,20 +104,37 @@ test('bug reproduction', async ({ page }) => {
           </section>
 
           {/* Step 2: Analysis Results */}
-          {(state === "analyzing" || timelineEvents || reproductionSteps) && (
+          {(steps[WorkflowStep.ANALYZE].status !== "idle" || data.analysis) && (
             <section>
-              <div className="mb-4 flex items-center gap-3">
-                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-600 text-sm font-semibold text-white">
-                  2
+              <div className="mb-4 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-600 text-sm font-semibold text-white">
+                    2
+                  </div>
+                  <h2 className="text-2xl font-semibold text-gray-900">Analysis Results</h2>
                 </div>
-                <h2 className="text-2xl font-semibold text-gray-900">Analysis Results</h2>
+                {steps[WorkflowStep.ANALYZE].status === "error" && (
+                  <button
+                    onClick={() => retry(WorkflowStep.ANALYZE)}
+                    className="rounded-md bg-red-100 px-3 py-1.5 text-sm font-medium text-red-700 transition-colors hover:bg-red-200"
+                  >
+                    Retry Analysis
+                  </button>
+                )}
               </div>
               <div className="grid gap-6 md:grid-cols-2">
                 <TimelinePanel
-                  events={timelineEvents}
-                  isLoading={state === "analyzing"}
+                  events={data.analysis?.timeline}
+                  isLoading={steps[WorkflowStep.ANALYZE].status === "loading"}
+                  error={steps[WorkflowStep.ANALYZE].error}
+                  onRetry={() => retry(WorkflowStep.ANALYZE)}
                 />
-                <StepsPanel steps={reproductionSteps} isLoading={state === "analyzing"} />
+                <StepsPanel
+                  steps={data.analysis?.reproSteps}
+                  isLoading={steps[WorkflowStep.ANALYZE].status === "loading"}
+                  error={steps[WorkflowStep.ANALYZE].error}
+                  onRetry={() => retry(WorkflowStep.ANALYZE)}
+                />
               </div>
             </section>
           )}
@@ -213,24 +150,25 @@ test('bug reproduction', async ({ page }) => {
                   <h2 className="text-2xl font-semibold text-gray-900">Generate Playwright Test</h2>
                 </div>
                 <button
-                  onClick={handleGenerateTest}
-                  disabled={state !== "idle"}
+                  onClick={generateTest}
+                  disabled={steps[WorkflowStep.TEST].status === "loading"}
                   className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-700 disabled:opacity-50"
                 >
-                  Generate Test
+                  {steps[WorkflowStep.TEST].status === "loading" ? "Generating..." : "Generate Test"}
                 </button>
               </div>
             </section>
           )}
 
           {/* Step 4: Test Code */}
-          {(state === "generating-test" || playwrightTest) && (
+          {(steps[WorkflowStep.TEST].status !== "idle" || data.test) && (
             <section>
               <CodePanel
                 title="Generated Playwright Test"
-                code={playwrightTest}
-                language="typescript"
-                isLoading={state === "generating-test"}
+                code={data.test?.playwrightSpec}
+                isLoading={steps[WorkflowStep.TEST].status === "loading"}
+                error={steps[WorkflowStep.TEST].error}
+                onRetry={() => retry(WorkflowStep.TEST)}
               />
             </section>
           )}
@@ -246,25 +184,27 @@ test('bug reproduction', async ({ page }) => {
                   <h2 className="text-2xl font-semibold text-gray-900">Run Test</h2>
                 </div>
                 <button
-                  onClick={handleRunTest}
-                  disabled={state !== "idle"}
+                  onClick={runTest}
+                  disabled={steps[WorkflowStep.RUN].status === "loading"}
                   className="rounded-md bg-green-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-green-700 disabled:opacity-50"
                 >
-                  Run Test
+                  {steps[WorkflowStep.RUN].status === "loading" ? "Running..." : "Run Test"}
                 </button>
               </div>
             </section>
           )}
 
           {/* Step 6: Test Results */}
-          {(state === "running-test" || testRunStatus) && (
+          {(steps[WorkflowStep.RUN].status !== "idle" || data.runResult) && (
             <section>
               <RunOutputPanel
-                status={testRunStatus}
-                stdout={testStdout}
-                stderr={testStderr}
-                screenshotUrl={screenshotUrl}
-                isLoading={state === "running-test"}
+                status={data.runResult?.status}
+                stdout={data.runResult?.stdout}
+                stderr={data.runResult?.stderr}
+                screenshotUrl={data.runResult?.screenshotUrl}
+                isLoading={steps[WorkflowStep.RUN].status === "loading"}
+                error={steps[WorkflowStep.RUN].error}
+                onRetry={() => retry(WorkflowStep.RUN)}
               />
             </section>
           )}
@@ -280,25 +220,42 @@ test('bug reproduction', async ({ page }) => {
                   <h2 className="text-2xl font-semibold text-gray-900">Generate Fix Patch</h2>
                 </div>
                 <button
-                  onClick={handleGeneratePatch}
-                  disabled={state !== "idle"}
+                  onClick={generatePatch}
+                  disabled={steps[WorkflowStep.PATCH].status === "loading"}
                   className="rounded-md bg-purple-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-purple-700 disabled:opacity-50"
                 >
-                  Generate Patch
+                  {steps[WorkflowStep.PATCH].status === "loading" ? "Generating..." : "Generate Patch"}
                 </button>
               </div>
             </section>
           )}
 
           {/* Step 8: Patch Diff */}
-          {(state === "generating-patch" || patchDiff) && (
+          {(steps[WorkflowStep.PATCH].status !== "idle" || data.patch) && (
             <section>
               <CodePanel
                 title="Suggested Fix Patch"
-                code={patchDiff}
-                language="diff"
-                isLoading={state === "generating-patch"}
+                code={data.patch?.diff}
+                isLoading={steps[WorkflowStep.PATCH].status === "loading"}
+                error={steps[WorkflowStep.PATCH].error}
+                onRetry={() => retry(WorkflowStep.PATCH)}
               />
+              {data.patch && (
+                <div className="mt-4 space-y-2 rounded-lg border border-gray-200 bg-white p-4">
+                  <h3 className="text-sm font-semibold text-gray-800">Rationale:</h3>
+                  <p className="text-sm text-gray-700">{data.patch.rationale}</p>
+                  {data.patch.risks.length > 0 && (
+                    <div className="mt-3">
+                      <h4 className="text-sm font-semibold text-gray-800">Risks:</h4>
+                      <ul className="mt-1 list-disc space-y-1 pl-5 text-sm text-gray-700">
+                        {data.patch.risks.map((risk, index) => (
+                          <li key={index}>{risk}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </div>
+              )}
             </section>
           )}
 
@@ -313,20 +270,25 @@ test('bug reproduction', async ({ page }) => {
                   <h2 className="text-2xl font-semibold text-gray-900">Export Bug Report</h2>
                 </div>
                 <button
-                  onClick={handleExport}
-                  disabled={state !== "idle"}
+                  onClick={exportBugReport}
+                  disabled={steps[WorkflowStep.EXPORT].status === "loading"}
                   className="rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-indigo-700 disabled:opacity-50"
                 >
-                  Generate Report
+                  {steps[WorkflowStep.EXPORT].status === "loading" ? "Generating..." : "Generate Report"}
                 </button>
               </div>
             </section>
           )}
 
           {/* Export Panel */}
-          {bugReport && (
+          {data.bugReport && (
             <section>
-              <ExportPanel bugReport={bugReport} />
+              <ExportPanel
+                bugReport={data.bugReport.markdown}
+                isLoading={steps[WorkflowStep.EXPORT].status === "loading"}
+                error={steps[WorkflowStep.EXPORT].error}
+                onRetry={() => retry(WorkflowStep.EXPORT)}
+              />
             </section>
           )}
         </div>

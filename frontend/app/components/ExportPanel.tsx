@@ -2,14 +2,16 @@
 
 interface ExportPanelProps {
   bugReport?: string;
-  onExport?: () => void;
   isLoading?: boolean;
+  error?: string | null;
+  onRetry?: () => void;
 }
 
 export default function ExportPanel({
   bugReport,
-  onExport,
   isLoading = false,
+  error,
+  onRetry,
 }: ExportPanelProps) {
   const handleDownload = () => {
     if (bugReport) {
@@ -38,7 +40,19 @@ export default function ExportPanel({
           </button>
         )}
       </div>
-      {isLoading ? (
+      {error ? (
+        <div className="space-y-2">
+          <p className="text-sm text-red-600">{error}</p>
+          {onRetry && (
+            <button
+              onClick={onRetry}
+              className="rounded-md bg-red-100 px-3 py-1.5 text-sm font-medium text-red-700 transition-colors hover:bg-red-200"
+            >
+              Retry
+            </button>
+          )}
+        </div>
+      ) : isLoading ? (
         <div className="flex items-center gap-2 text-gray-500">
           <div className="h-4 w-4 animate-spin rounded-full border-2 border-gray-300 border-t-blue-600"></div>
           <span>Generating report...</span>

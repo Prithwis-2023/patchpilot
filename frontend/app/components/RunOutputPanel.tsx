@@ -6,8 +6,10 @@ interface RunOutputPanelProps {
   status?: "running" | "success" | "failed";
   stdout?: string;
   stderr?: string;
-  screenshotUrl?: string;
+  screenshotUrl?: string | null;
   isLoading?: boolean;
+  error?: string | null;
+  onRetry?: () => void;
 }
 
 export default function RunOutputPanel({
@@ -16,11 +18,25 @@ export default function RunOutputPanel({
   stderr,
   screenshotUrl,
   isLoading = false,
+  error,
+  onRetry,
 }: RunOutputPanelProps) {
   return (
     <div className="w-full rounded-lg border border-gray-200 bg-white p-6">
       <h2 className="mb-4 text-xl font-semibold text-gray-800">Test Run Results</h2>
-      {isLoading ? (
+      {error ? (
+        <div className="space-y-2">
+          <p className="text-sm text-red-600">{error}</p>
+          {onRetry && (
+            <button
+              onClick={onRetry}
+              className="rounded-md bg-red-100 px-3 py-1.5 text-sm font-medium text-red-700 transition-colors hover:bg-red-200"
+            >
+              Retry
+            </button>
+          )}
+        </div>
+      ) : isLoading ? (
         <div className="flex items-center gap-2 text-gray-500">
           <div className="h-4 w-4 animate-spin rounded-full border-2 border-gray-300 border-t-blue-600"></div>
           <span>Running test...</span>
@@ -63,13 +79,14 @@ export default function RunOutputPanel({
           {screenshotUrl && (
             <div>
               <h3 className="mb-2 text-sm font-semibold text-gray-700">Screenshot:</h3>
-              <Image
-                src={screenshotUrl}
-                alt="Test failure screenshot"
-                className="max-w-full rounded-md border border-gray-200"
-                width={1000}
-                height={1000}
-              />
+              <div className="relative h-64 w-full">
+                <Image
+                  src={screenshotUrl}
+                  alt="Test failure screenshot"
+                  fill
+                  className="rounded-md border border-gray-200 object-contain"
+                />
+              </div>
             </div>
           )}
         </div>

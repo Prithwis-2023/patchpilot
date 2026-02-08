@@ -1,20 +1,36 @@
 "use client";
 
-interface TimelineEvent {
-  timestamp: string;
-  description: string;
-}
+import type { TimelineEvent } from "../lib/types";
 
 interface TimelinePanelProps {
   events?: TimelineEvent[];
   isLoading?: boolean;
+  error?: string | null;
+  onRetry?: () => void;
 }
 
-export default function TimelinePanel({ events, isLoading = false }: TimelinePanelProps) {
+export default function TimelinePanel({
+  events,
+  isLoading = false,
+  error,
+  onRetry,
+}: TimelinePanelProps) {
   return (
     <div className="w-full rounded-lg border border-gray-200 bg-white p-6">
       <h2 className="mb-4 text-xl font-semibold text-gray-800">Timeline</h2>
-      {isLoading ? (
+      {error ? (
+        <div className="space-y-2">
+          <p className="text-sm text-red-600">{error}</p>
+          {onRetry && (
+            <button
+              onClick={onRetry}
+              className="rounded-md bg-red-100 px-3 py-1.5 text-sm font-medium text-red-700 transition-colors hover:bg-red-200"
+            >
+              Retry
+            </button>
+          )}
+        </div>
+      ) : isLoading ? (
         <div className="flex items-center gap-2 text-gray-500">
           <div className="h-4 w-4 animate-spin rounded-full border-2 border-gray-300 border-t-blue-600"></div>
           <span>Analyzing video...</span>

@@ -1,0 +1,13 @@
+{
+  "name": "patchpilot",
+  "version": "0.1.0",
+  "private": true,
+  "packageManager": "pnpm@9.0.0",
+  "scripts": {
+    "dev": "pnpm -C frontend dev",
+    "build": "pnpm -C frontend build",
+    "start": "pnpm -C frontend start",
+    "lint": "pnpm -C frontend lint",
+    "typecheck": "pnpm -C frontend typecheck"
+  }
+}
