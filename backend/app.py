@@ -1,4 +1,5 @@
 from fastapi import FastAPI, UploadFile, File
+from dotenv import load_dotenv
 from schemas import AnalysisResponse, TestResponse, PatchRequest, PatchResponse
 from video_utils import extract_frames
 from gemini import analyze_video, generate_test, generate_patch

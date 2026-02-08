@@ -1,11 +1,18 @@
 import re
-import google.generativeai as genai
+from google import genai
 import json
 from schemas import AnalysisResponse, TestResponse, PatchResponse, PatchResponse
 import os
+from dotenv import load_dotenv
 
-genai.configure(api_key=os.getenv("GENAI_API_KEY"))
-model = genai.GenerativeModel("gemini-1.5-pro-latest")
+MODEL_ID = "gemini-2.5-pro-latest"
+
+load_dotenv(os.path.join(os.path.dirname(__file__), '..', '.env'))
+
+client = genai.Client()
+
+#genai.configure(api_key=os.getenv("GENAI_API_KEY"))
+#model = client.models.get("gemini-2.5-pro-latest")
 
 def clear_json_response(text):
     # this regex find text between ```json and ``` or just ```
@@ -38,11 +45,12 @@ def analyze_video(frames):
     Do not include markdown or explanation.
     """
 
-    images = [genai.upload_file(f) for f in frames]
+    images = [client.upload_file(f) for f in frames]
     # we also tell Gemini to strictly output valid JSON
-    response = model.generate_content(
-        [prompt] + images,
-        generation_config = {
+    response = client.models.generate_content(
+        model=MODEL_ID,
+        contents=[prompt] + images,
+        config = {
             "temperature": 0.1,
             "top_p": 0.5,
             "response_mime_type": "application/json"
@@ -76,9 +84,10 @@ def generate_test(analysis):
     }
     No markdown.
     """
-    response = model.generate_content(
-        prompt,
-        generation_config = {
+    response = client.models.generate_content(
+        model=MODEL_ID,
+        contents=prompt,
+        config = {
             "temperature": 0.1,
             "top_p": 0.5,
             "response_mime_type": "application/json"
@@ -114,9 +123,10 @@ def generate_patch(request):
     CRITICAL: The diff must be a single string within the JSON. Use '\\n' for newlines.
     """
     
-    response = model.generate_content(
-        prompt,
-        generation_config = {
+    response = client.models.generate_content(
+        model=MODEL_ID,
+        contents=prompt,
+        config = {
             "temperature": 0.1,
             "response_mime_type": "application/json"
         }
