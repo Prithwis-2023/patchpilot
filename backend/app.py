@@ -1,6 +1,6 @@
 from fastapi import FastAPI, UploadFile, File
 from schemas import AnalysisResponse, TestResponse, PatchRequest, PatchResponse
-from video_utils import extract_keyframes
+from video_utils import extract_frames
 from gemini import analyze_video, generate_test, generate_patch
 from playwright_runner import run_playwright_test
 import shutil
@@ -17,12 +17,12 @@ async def analyze(file: UploadFile = File(...)):
     with open(video_path, "wb") as buffer:
         shutil.copyfileobj(file.file, buffer)
 
-    frames = extract_keyframes(video_path)
+    frames = extract_frames(video_path)
     analysis = analyze_video(frames)
     return analysis
 
 @app.post("/generate-test", response_model = TestResponse)
-async def generate_test(analysis: AnalysisResponse):
+async def api_generate_test(analysis: AnalysisResponse):
     return generate_test(analysis)
 
 @app.post("/run-test")
@@ -31,6 +31,6 @@ async def run_test(test: TestResponse):
     return result
 
 @app.post('/generate-patch', response_model=PatchResponse)
-async def generate_patch(request: PatchRequest):
+async def api_generate_patch(request: PatchRequest):
     print(f"Analyzing error: {request.error_log}")
-    return generate_patch(request.model_dump())  #
+    return generate_patch(request)  
