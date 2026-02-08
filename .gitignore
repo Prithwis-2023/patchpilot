@@ -50,10 +50,6 @@ reference-web-for-frontend
 .venv/
 **/ .venv/
 
-# Ignore all environment files
-.env
-**/.env
-
 # Python cache
 **/__pycache__/
 *.py[cod]
