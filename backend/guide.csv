@@ -1,0 +1,5 @@
+Endpoint,Argument Type,Expected Input,Validation Level,Access Data As
+/analyze,UploadFile,Binary File,File format only,File Object
+/generate-test,AnalysisResponse,JSON,Strict (Must match Schema),Python Object (obj.field)
+/run-test,TestResponse,JSON,Strict (Must match Schema),Python Object (obj.field)
+/generate-patch,dict,JSON,None (Accepts any JSON),Dictionary (obj['field'])
