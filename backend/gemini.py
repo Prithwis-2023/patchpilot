@@ -24,7 +24,7 @@ if not api_key:
 client = genai.Client(api_key=api_key)
 
 #genai.configure(api_key=os.getenv("GENAI_API_KEY"))
-#model = client.models.get("gemini-2.5-pro-latest")
+#model = client.models.get("gemini-2.5-pro-latest") 
 
 def clear_json_response(text):
     # this regex find text between ```json and ``` or just ```
@@ -118,7 +118,7 @@ def analyze_video(frames):
 
         return AnalysisResponse(**data)
     except Exception as e:
-        # Fallback: try without structured output
+        # Fallback: try without response schema
         uploaded_files = []
         try:
             for frame_path in frames:
@@ -175,19 +175,32 @@ def generate_test(analysis):
         },
         "required": ["filename", "playwrightSpec"]
     }
-    
-    response = client.models.generate_content(
-        model=MODEL_ID,
-        contents=prompt,
-        config={
-            "temperature": 0.1,
-            "top_p": 0.5,
-            "response_mime_type": "application/json",
-            "response_schema": response_schema
-        }
-    )
-    data = json.loads(clear_json_response(response.text))
-    return TestResponse(**data)
+    try:
+        response = client.models.generate_content(
+            model=MODEL_ID,
+            contents=prompt,
+            config={
+                "temperature": 0.1,
+                "top_p": 0.5,
+                "response_mime_type": "application/json",
+                "response_schema": response_schema
+            }
+        )
+        data = json.loads(clear_json_response(response.text))
+        return TestResponse(**data)
+    except Exception as e:
+        # Fallback: try without response schema
+        response = client.models.generate_content(
+            model=MODEL_ID,
+            contents=prompt,
+            config={
+                "temperature": 0.1,
+                "top_p": 0.5,
+                "response_mime_type": "application/json"
+            }
+        )
+        data = json.loads(clear_json_response(response.text))
+        return TestResponse(**data)
 
 def generate_patch(request):
     failing_test = request.failing_test or (request.run_result and request.run_result.get("playwrightSpec", "")) or ""
@@ -236,21 +249,39 @@ def generate_patch(request):
         },
         "required": ["diff", "rationale"]
     }
-    
-    response = client.models.generate_content(
-        model=MODEL_ID,
-        contents=prompt,
-        config={
-            "temperature": 0.1,
-            "response_mime_type": "application/json",
-            "response_schema": response_schema
-        }
-    )
-    clean_data = clear_json_response(response.text)
-    data = json.loads(clean_data)
-    
-    # Ensure risks is always a list
-    if "risks" not in data:
-        data["risks"] = []
+    try:
+        response = client.models.generate_content(
+            model=MODEL_ID,
+            contents=prompt,
+            config={
+                "temperature": 0.1,
+                "response_mime_type": "application/json",
+                "response_schema": response_schema
+            }
+        )
+        clean_data = clear_json_response(response.text)
+        data = json.loads(clean_data)
+        
+        # Ensure risks is always a list
+        if "risks" not in data:
+            data["risks"] = []
 
-    return PatchResponse(**data)
+        return PatchResponse(**data)
+    
+    except Exception as e:
+        # Fallback: try without response schema
+        response = client.models.generate_content(
+            model=MODEL_ID,
+            contents=prompt,
+            config={
+                "temperature": 0.1,
+                "response_mime_type": "application/json"
+            }
+        )
+        clean_data = clear_json_response(response.text)
+        data = json.loads(clean_data)
+        
+        if "risks" not in data:
+            data["risks"] = []
+
+        return PatchResponse(**data)

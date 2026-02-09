@@ -1,4 +1,5 @@
 import subprocess
+import uuid
 import os
 import time
 from typing import Optional
@@ -16,8 +17,9 @@ def run_playwright_test(test_code: str) -> dict:
             "screenshotUrl": Optional[str]  # null for now, can be added later
         }
     """
+    test_id = str(uuid.uuid4())
     os.makedirs("temp", exist_ok=True)
-    test_file = "temp/test_run.spec.ts"
+    test_file = f"temp/test_{test_id}.spec.ts"
     
     # Write test file
     with open(test_file, "w") as f:
