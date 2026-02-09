@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Analytics } from "@vercel/analytics/next"
 import { JetBrains_Mono, IBM_Plex_Sans, Fira_Code } from "next/font/google";
 import "./globals.css";
 import DynamicBackground from "./components/DynamicBackground";
@@ -57,11 +58,12 @@ export default function RootLayout({
         <DynamicBackground />
         <FloatingParticles />
         <CustomCursor />
-        
+
         {/* Main content */}
         <div className="relative z-10 min-h-screen">
           {children}
         </div>
+        <Analytics />
       </body>
     </html>
   );
