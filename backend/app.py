@@ -77,6 +77,15 @@ BACKEND_PORT = int(os.getenv("PORT", "8000"))
 async def health():
     return {"ok": True}
 
+@app.get("/debug/cors")
+async def debug_cors():
+    """Debug endpoint to see what CORS origins are configured."""
+    return {
+        "cors_origins": get_cors_origins(),
+        "env_var": os.getenv("CORS_ALLOWED_ORIGINS", "NOT SET"),
+        "all_env_vars": {k: v for k, v in os.environ.items() if "CORS" in k.upper()}
+    }
+
 @app.get("/selfcheck")
 async def selfcheck():
     """
