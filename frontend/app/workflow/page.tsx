@@ -8,6 +8,7 @@ import { Button } from "@/app/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/app/components/ui/tabs";
 import { Upload, Play, CheckCircle2, AlertCircle, Code2, Download, Copy, Loader2 } from "lucide-react";
 import MacOSCodeEditor from "@/app/components/MacOSCodeEditor";
+import DiffViewer from "@/app/components/DiffViewer";
 import { usePatchpilotWorkflow } from "@/app/lib/usePatchpilotWorkflow";
 import { WorkflowStep } from "@/app/lib/types";
 import { useCopyFeedback } from "@/app/lib/useCopyFeedback";
@@ -128,21 +129,26 @@ export default function WorkflowPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-background relative overflow-hidden">
-      {/* Navigation */}
+    <div className="min-h-screen relative bg-background/85">
+      {/* Navigation - consistent with Home nav */}
       <motion.nav 
-        className="relative z-20 border-b border-border/50 backdrop-blur-sm sticky top-0"
+        className="sticky top-0 z-50 border-b border-border/50 backdrop-blur-sm bg-background/90"
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
       >
         <div className="container mx-auto px-4 md:px-8 py-4 flex items-center justify-between">
-          <div className="text-2xl font-bold" style={{ fontFamily: 'var(--font-display)' }}>
+          <Link href="/" className="text-xl md:text-2xl font-bold hover:opacity-80 transition-opacity" style={{ fontFamily: 'var(--font-display)' }}>
             <span className="text-[var(--neon-cyan)]">▶</span> PATCHPILOT
-          </div>
-          <div className="hidden md:flex gap-8 font-mono text-sm">
-            <Link href="/" className="text-muted-foreground hover:text-foreground transition">HOME</Link>
-            <span className="text-[var(--neon-cyan)]">WORKFLOW</span>
+          </Link>
+          <div className="hidden md:flex items-center gap-6 font-mono text-sm">
+            <Link href="/" className="text-muted-foreground hover:text-foreground transition-colors">HOME</Link>
+            <Link href="/#features" className="text-muted-foreground hover:text-foreground transition-colors">FEATURES</Link>
+            <Link href="/#workflow" className="text-muted-foreground hover:text-foreground transition-colors">WORKFLOW</Link>
+            <Link href="/#demo" className="text-muted-foreground hover:text-foreground transition-colors">DEMO</Link>
+            <Link href="/#code-examples" className="text-muted-foreground hover:text-foreground transition-colors">CODE EXAMPLES</Link>
+            <Link href="/#creators" className="text-muted-foreground hover:text-foreground transition-colors">FROM THE CREATORS</Link>
+            <span className="px-4 py-2 bg-[var(--neon-cyan)]/10 border-2 border-[var(--neon-cyan)]/50 text-[var(--neon-cyan)] font-bold">WORKFLOW</span>
           </div>
           <div className="flex items-center gap-4">
             {/* Backend Health Indicator */}
@@ -166,14 +172,28 @@ export default function WorkflowPage() {
                 )}
               </div>
             )}
-            <select
-              value={pipelineMode}
-              onChange={(e) => setPipelineMode(e.target.value as "sample" | "backend")}
-              className="bg-muted/20 border border-border/30 px-3 py-1 rounded text-sm font-mono text-foreground"
-            >
-              <option value="sample">Sample Mode</option>
-              <option value="backend">Backend Mode</option>
-            </select>
+            <div className="flex items-center gap-1 bg-muted/20 border border-border/30 rounded p-1">
+              <button
+                onClick={() => setPipelineMode("sample")}
+                className={`px-3 py-1.5 rounded text-xs font-mono transition-all ${
+                  pipelineMode === "sample"
+                    ? "bg-[var(--neon-cyan)]/20 text-[var(--neon-cyan)] border border-[var(--neon-cyan)]/50"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                Sample
+              </button>
+              <button
+                onClick={() => setPipelineMode("backend")}
+                className={`px-3 py-1.5 rounded text-xs font-mono transition-all ${
+                  pipelineMode === "backend"
+                    ? "bg-[var(--neon-cyan)]/20 text-[var(--neon-cyan)] border border-[var(--neon-cyan)]/50"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                Backend
+              </button>
+            </div>
             <Button
               variant="ghost"
               size="sm"
@@ -504,7 +524,7 @@ export default function WorkflowPage() {
 
                     {steps[WorkflowStep.TEST].status === "success" && data.test && (
                       <>
-                        <div className="max-h-96 overflow-hidden">
+                        <div style={{ maxHeight: "600px", overflowY: "auto" }}>
                           <MacOSCodeEditor codeSnippet={data.test.playwrightSpec} />
                         </div>
 
@@ -804,20 +824,9 @@ export default function WorkflowPage() {
                           </motion.div>
                         </div>
 
-                        {/* Code diff */}
-                        <div className="p-6 bg-slate-950 border border-slate-700 rounded-lg font-mono text-sm space-y-2 max-h-96 overflow-y-auto">
-                          {data.patch.diff.split('\n').map((line, index) => {
-                            const isAdd = line.startsWith('+');
-                            const isRemove = line.startsWith('-');
-                            return (
-                              <div
-                                key={index}
-                                className={isAdd ? "text-green-400" : isRemove ? "text-red-400" : "text-slate-400"}
-                              >
-                                {line}
-                              </div>
-                            );
-                          })}
+                        {/* Code diff - VS Code style */}
+                        <div className="p-6">
+                          <DiffViewer diff={data.patch.diff} />
                         </div>
 
                         {/* Risks */}

@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useCopyFeedback } from "../lib/useCopyFeedback";
 import { config } from "../lib/config";
 import { fadeSlide, pop, buttonHover, buttonPress } from "../lib/motion";
+import SyntaxHighlightedCode from "./SyntaxHighlightedCode";
 
 interface CodePanelProps {
   title: string;
@@ -12,6 +13,7 @@ interface CodePanelProps {
   isLoading?: boolean;
   error?: string | null;
   onRetry?: () => void;
+  useSyntaxHighlight?: boolean;
 }
 
 export default function CodePanel({
@@ -20,6 +22,7 @@ export default function CodePanel({
   isLoading = false,
   error,
   onRetry,
+  useSyntaxHighlight = false,
 }: CodePanelProps) {
   const { copied, copyToClipboard } = useCopyFeedback();
   const [hoveredLine, setHoveredLine] = useState<number | null>(null);
@@ -113,29 +116,40 @@ export default function CodePanel({
           </span>
         </div>
       ) : code ? (
-        <motion.pre
+        <motion.div
           initial="hidden"
           animate="visible"
           variants={fadeSlide}
-          className="overflow-x-auto rounded-md p-4"
-          style={{ backgroundColor: "var(--surface-3)" }}
         >
-          <code className="font-mono text-sm text-primary">
-            {lines.map((line, index) => (
-              <motion.div
-                key={index}
-                onMouseEnter={() => setHoveredLine(index)}
-                onMouseLeave={() => setHoveredLine(null)}
-                className="px-2 py-0.5 transition-colors"
-                style={{
-                  backgroundColor: hoveredLine === index ? "var(--border)" : undefined,
-                }}
-              >
-                <span className="select-all">{line || " "}</span>
-              </motion.div>
-            ))}
-          </code>
-        </motion.pre>
+          {useSyntaxHighlight && config.pipelineMode === "backend" ? (
+            <SyntaxHighlightedCode code={code} language="typescript" />
+          ) : (
+            <pre
+              className="overflow-x-auto rounded-md p-4"
+              style={{
+                backgroundColor: "var(--surface-3)",
+                maxHeight: "600px",
+                overflowY: "auto",
+              }}
+            >
+              <code className="font-mono text-sm text-primary">
+                {lines.map((line, index) => (
+                  <motion.div
+                    key={index}
+                    onMouseEnter={() => setHoveredLine(index)}
+                    onMouseLeave={() => setHoveredLine(null)}
+                    className="px-2 py-0.5 transition-colors"
+                    style={{
+                      backgroundColor: hoveredLine === index ? "var(--border)" : undefined,
+                    }}
+                  >
+                    <span className="select-all">{line || " "}</span>
+                  </motion.div>
+                ))}
+              </code>
+            </pre>
+          )}
+        </motion.div>
       ) : (
         <div className="card rounded-md p-4 text-center">
           <p className="text-sm text-muted">

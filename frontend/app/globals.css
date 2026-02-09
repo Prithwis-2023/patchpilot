@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import "prismjs/themes/prism-tomorrow.css";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -113,6 +114,16 @@
     font-size: 16px;
     line-height: 1.6;
   }
+
+  /* Hide system cursor on desktop when custom cursor is active */
+  @media (min-width: 768px) {
+    html, body {
+      cursor: none !important;
+    }
+    a, button, input, textarea, select, label, [role="button"], [tabindex], [type="button"], [type="submit"], [type="reset"] {
+      cursor: none !important;
+    }
+  }
   
   h1, h2, h3, h4, h5, h6 {
     font-family: var(--font-display);
@@ -125,16 +136,19 @@
     font-family: var(--font-code);
   }
   
-  button:not(:disabled),
-  [role="button"]:not([aria-disabled="true"]),
-  [type="button"]:not(:disabled),
-  [type="submit"]:not(:disabled),
-  [type="reset"]:not(:disabled),
-  a[href],
-  select:not(:disabled),
-  input[type="checkbox"]:not(:disabled),
-  input[type="radio"]:not(:disabled) {
-    @apply cursor-pointer;
+  /* Cursor styles - only on mobile */
+  @media (max-width: 767px) {
+    button:not(:disabled),
+    [role="button"]:not([aria-disabled="true"]),
+    [type="button"]:not(:disabled),
+    [type="submit"]:not(:disabled),
+    [type="reset"]:not(:disabled),
+    a[href],
+    select:not(:disabled),
+    input[type="checkbox"]:not(:disabled),
+    input[type="radio"]:not(:disabled) {
+      @apply cursor-pointer;
+    }
   }
 }
 
@@ -212,10 +226,10 @@
     height: 100%;
     background: repeating-linear-gradient(
       0deg,
-      rgba(0, 255, 255, 0.03) 0px,
+      rgba(0, 255, 255, 0.06) 0px,
       transparent 1px,
       transparent 2px,
-      rgba(0, 255, 255, 0.03) 3px
+      rgba(0, 255, 255, 0.06) 3px
     );
     pointer-events: none;
     z-index: 10;
@@ -240,8 +254,8 @@
   /* Diagonal grid background */
   .diagonal-grid {
     background-image: 
-      linear-gradient(45deg, rgba(0, 255, 255, 0.05) 1px, transparent 1px),
-      linear-gradient(-45deg, rgba(255, 0, 255, 0.05) 1px, transparent 1px);
+      linear-gradient(45deg, rgba(0, 255, 255, 0.12) 1px, transparent 1px),
+      linear-gradient(-45deg, rgba(255, 0, 255, 0.12) 1px, transparent 1px);
     background-size: 40px 40px;
   }
 }
@@ -301,4 +315,32 @@
   11% { transform: skew(2deg); }
   12% { transform: skew(0deg); }
   100% { transform: skew(0deg); }
+}
+
+/* Custom Scrollbar Styling */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(0, 255, 255, 0.4);
+  border-radius: 4px;
+  transition: background 0.2s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 255, 255, 0.7);
+  box-shadow: 0 0 8px rgba(0, 255, 255, 0.5);
+}
+
+/* Firefox scrollbar */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0, 255, 255, 0.4) rgba(0, 0, 0, 0.3);
 }

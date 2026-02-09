@@ -152,11 +152,20 @@ def generate_test(analysis):
 
     {analysis.reproSteps}
 
+    Target URL: {analysis.targetUrl or 'http://localhost:3001'}
+
     Rules:
     - Use @playwright/test syntax
-    - Prefer getByRole, getByLabelText, getByText over CSS selectors
-    - Include at least one assertion verifying the bug
-    - Include screenshot on failure
+    - ALWAYS use full URLs with protocol (e.g., http://localhost:3001, NOT localhost:3001)
+    - STRONGLY PREFER getByTestId() when data-testid attributes are available in the DOM
+    - Fallback order: getByTestId > getByRole > getByLabelText > getByText > CSS selectors
+    - Avoid fragile CSS class selectors unless no other option exists
+    - Include assertions that verify the bug described in reproduction steps
+    - Include screenshot on failure for debugging
+    - Use page.goto() with full URL including protocol
+    - Use explicit waits when needed: await page.waitForLoadState('networkidle') after navigation
+    - Set reasonable timeouts: test.setTimeout(30000) to prevent hanging
+    - Analyze the reproduction steps to determine what selectors and assertions are needed
 
     Return ONLY valid JSON:
 
@@ -204,6 +213,16 @@ def generate_test(analysis):
 
 def generate_patch(request):
     failing_test = request.failing_test or (request.run_result and request.run_result.get("playwrightSpec", "")) or ""
+    original_code_section = ""
+    if request.original_code:
+        original_code_section = f"""
+    
+    ORIGINAL SOURCE CODE (the application code being tested):
+    {request.original_code}
+    
+    IMPORTANT: The fix should be applied to the ORIGINAL SOURCE CODE, NOT the test code.
+    The diff should show changes to the application source file (e.g., checkout page component).
+    """
     
     prompt = f"""
     You are a senior Software Engineer. You must provide a fix for a failing Playwright test.
@@ -213,16 +232,24 @@ def generate_patch(request):
 
     FAILING TEST CODE:
     {failing_test}
-
+    {original_code_section}
     TASK:
-    1. Identify the root cause (e.g., race condition, incorrect selector, missing assertion).
-    2. Provide a "unified diff" that can be applied to the FAILING TEST CODE.
-    3. Ensure the diff follows standard format:
-       --- original
-       +++ modified
+    1. Analyze the failure logs and test code to identify the root cause of the bug.
+    2. Examine the error messages, stack traces, and test assertions to understand what went wrong.
+    3. If the original source code is provided, analyze it to understand the application structure and identify the bug.
+    4. Determine the appropriate fix based on:
+       - The error messages and logs
+       - The framework/library being used (e.g., Next.js, React, etc.)
+       - Best practices for that framework
+       - The specific issue causing the test to fail
+    5. Provide a "unified diff" that fixes the APPLICATION SOURCE CODE (not the test code).
+    6. Ensure the diff follows standard format:
+       --- a/path/to/file.ext
+       +++ b/path/to/file.ext
        @@ -line,count +line,count @@
-    4. Provide rationale as a list of bullet points explaining the fix.
-    5. List any risks or considerations.
+    7. The diff should address the root cause identified in step 1, not just symptoms.
+    8. Provide rationale as a list of bullet points explaining why this fix addresses the root cause.
+    9. List any risks or considerations with the proposed fix.
     
     RETURN ONLY JSON:
     {{
@@ -231,7 +258,10 @@ def generate_patch(request):
     "risks": ["risk 1", "risk 2"]
     }}
     
-    CRITICAL: The diff must be a single string within the JSON. Use '\\n' for newlines.
+    CRITICAL: 
+    - The diff must be a single string within the JSON. Use '\\n' for newlines.
+    - The diff should fix the APPLICATION CODE, not the test code.
+    - Analyze the error logs and source code to determine the appropriate fix - do not assume a specific solution.
     """
     
     response_schema = {

@@ -12,7 +12,7 @@ import { Play, AlertTriangle, Zap, Rocket } from "lucide-react";
 
 export default function CreatorSection() {
   return (
-    <section className="relative z-10 py-24 border-t border-border/30">
+    <section id="creators" className="relative z-10 py-24 border-t border-border/30">
       <div className="container mx-auto px-8">
         <motion.div
           className="text-center mb-16"

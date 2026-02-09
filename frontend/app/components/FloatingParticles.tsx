@@ -51,7 +51,7 @@ export default function FloatingParticles() {
         y: Math.random() * canvas.height,
         vx: (Math.random() - 0.5) * 0.5,
         vy: (Math.random() - 0.5) * 0.5,
-        size: Math.random() * 4 + 2,
+        size: Math.random() * 6 + 3,
         color: colors[Math.floor(Math.random() * colors.length)],
         shape: shapes[Math.floor(Math.random() * shapes.length)],
       });
@@ -107,7 +107,7 @@ export default function FloatingParticles() {
         if (particle.y > canvas.height) particle.y = 0;
 
         // Draw particle
-        ctx.shadowBlur = 10;
+        ctx.shadowBlur = 15;
         ctx.shadowColor = particle.color;
 
         if (particle.shape === "square") {
@@ -136,7 +136,7 @@ export default function FloatingParticles() {
   return (
     <canvas
       ref={canvasRef}
-      className="fixed inset-0 pointer-events-none z-0 opacity-20"
+      className="fixed inset-0 pointer-events-none z-0 opacity-70"
       style={{ mixBlendMode: "screen" }}
     />
   );

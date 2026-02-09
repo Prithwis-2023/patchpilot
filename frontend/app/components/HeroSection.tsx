@@ -26,15 +26,15 @@ export default function HeroSection() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
+              className="flex items-center gap-2 mb-6"
             >
-              <div className="inline-block px-4 py-2 border-2 border-[var(--neon-magenta)] bg-[var(--neon-magenta)]/10 rounded-lg mb-6">
-                <span
-                  className="text-sm font-bold text-[var(--neon-magenta)]"
-                  style={{ fontFamily: "var(--font-display)" }}
-                >
-                  AI-POWERED BUG DETECTION
-                </span>
-              </div>
+              <span className="text-[var(--neon-cyan)] text-lg">▶</span>
+              <span
+                className="text-sm font-bold text-[var(--neon-magenta)]"
+                style={{ fontFamily: "var(--font-display)" }}
+              >
+                AI-POWERED BUG DETECTION
+              </span>
             </motion.div>
 
             <motion.h1
@@ -92,13 +92,13 @@ export default function HeroSection() {
             >
               <Button
                 size="lg"
-                className="neon-border-cyan bg-[var(--neon-cyan)]/10 hover:bg-[var(--neon-cyan)]/20 text-[var(--neon-cyan)] font-bold px-8 py-6 text-lg"
+                className="neon-border-cyan bg-[var(--neon-cyan)]/10 hover:bg-[var(--neon-cyan)]/20 text-[var(--neon-cyan)] font-bold px-10 py-7 text-xl transition-all duration-300 hover:shadow-[0_0_30px_rgba(0,255,255,0.6)]"
                 style={{ fontFamily: "var(--font-display)" }}
                 asChild
               >
                 <Link href="/workflow">
                   GET STARTED
-                  <ArrowRight className="ml-2 w-5 h-5" />
+                  <ArrowRight className="ml-2 w-6 h-6" />
                 </Link>
               </Button>
               <Button
@@ -106,6 +106,12 @@ export default function HeroSection() {
                 variant="outline"
                 className="border-2 border-[var(--neon-magenta)] text-[var(--neon-magenta)] hover:bg-[var(--neon-magenta)]/10 font-bold px-8 py-6 text-lg"
                 style={{ fontFamily: "var(--font-display)" }}
+                onClick={() => {
+                  const demoSection = document.getElementById("demo");
+                  if (demoSection) {
+                    demoSection.scrollIntoView({ behavior: "smooth", block: "start" });
+                  }
+                }}
               >
                 <Play className="mr-2 w-5 h-5" />
                 WATCH DEMO
@@ -138,14 +144,18 @@ export default function HeroSection() {
               transition={{ duration: 5, repeat: Infinity, delay: 0.5 }}
             />
 
-            {/* Center card */}
+            {/* Center card - bigger, less CTA-like */}
             <motion.div
-              className="relative z-10 w-80 h-96 bg-gradient-to-br from-card/80 to-card/40 backdrop-blur-xl border-2 border-[var(--neon-cyan)]/50 rounded-2xl p-8 shadow-2xl"
+              className="relative z-10 w-96 h-[500px] bg-gradient-to-br from-card/80 to-card/40 backdrop-blur-xl border-2 border-[var(--neon-cyan)]/30 rounded-2xl p-8 shadow-2xl"
               animate={{
                 y: [0, -20, 0]
               }}
               transition={{ duration: 3, repeat: Infinity }}
             >
+              {/* Optional PatchPilot logo mark */}
+              <div className="absolute -top-3 -right-3 w-12 h-12 bg-[var(--neon-cyan)]/20 border border-[var(--neon-cyan)]/50 rounded-lg flex items-center justify-center">
+                <span className="text-[var(--neon-cyan)] font-bold text-xs">PP</span>
+              </div>
               {/* Card content */}
               <div className="space-y-6 h-full flex flex-col justify-between">
                 {/* Header */}

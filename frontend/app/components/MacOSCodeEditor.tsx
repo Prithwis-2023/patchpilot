@@ -78,8 +78,8 @@ test('should enable login button when email is valid', async ({ page }) => {
           <div className="w-12" />
         </div>
 
-        {/* Code Editor */}
-        <div className="p-6 font-mono text-sm bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 overflow-x-auto">
+        {/* Code Editor - with internal scroll */}
+        <div className="p-6 font-mono text-sm bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 overflow-x-auto" style={{ maxHeight: "600px", overflowY: "auto" }}>
           <div className="space-y-1">
             {codeSnippet.split('\n').map((line, index) => {
               // Simple syntax highlighting
@@ -101,12 +101,12 @@ test('should enable login button when email is valid', async ({ page }) => {
                   transition={{ delay: index * 0.02 }}
                 >
                   {/* Line number */}
-                  <span className="text-slate-600 select-none w-8 text-right">
+                  <span className="text-slate-600 select-none w-8 text-right flex-shrink-0">
                     {String(index + 1).padStart(2, ' ')}
                   </span>
 
                   {/* Code line with syntax highlighting */}
-                  <span className={`flex-1 ${color}`}>
+                  <span className={`flex-1 ${color} break-words`}>
                     {line.replace(/\s+$/g, '')}
                   </span>
                 </motion.div>

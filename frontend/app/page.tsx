@@ -20,26 +20,31 @@ import MacOSCodeEditor from "./components/MacOSCodeEditor";
 
 export default function Home() {
   return (
-    <div className="min-h-screen bg-background relative overflow-hidden">
-      {/* Navigation */}
+    <div className="min-h-screen relative bg-background/85">
+      {/* Navigation - sticky, right cluster, consistent naming */}
       <motion.nav 
-        className="relative z-20 border-b border-border/50 backdrop-blur-sm sticky top-0"
+        className="sticky top-0 z-50 border-b border-border/50 backdrop-blur-sm bg-background/90"
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
       >
         <div className="container mx-auto px-4 md:px-8 py-4 flex items-center justify-between">
-          <div className="text-xl md:text-2xl font-bold" style={{ fontFamily: 'var(--font-display)' }}>
+          <Link href="/" className="text-xl md:text-2xl font-bold hover:opacity-80 transition-opacity" style={{ fontFamily: 'var(--font-display)' }}>
             <span className="text-[var(--neon-cyan)]">▶</span> PATCHPILOT
-          </div>
-          <div className="hidden md:flex gap-8 font-mono text-sm">
-            <a href="#features" className="text-muted-foreground hover:text-foreground transition">FEATURES</a>
-            <a href="#workflow" className="text-muted-foreground hover:text-foreground transition">WORKFLOW</a>
-            <a href="#demo" className="text-muted-foreground hover:text-foreground transition">DEMO</a>
-          </div>
-          <Link href="/workflow" className="text-[var(--neon-cyan)] font-mono text-sm hover:text-[var(--neon-magenta)] transition">
-            SIMULATOR →
           </Link>
+          <div className="hidden md:flex items-center gap-6 font-mono text-sm">
+            <a href="#features" className="text-muted-foreground hover:text-foreground transition-colors">FEATURES</a>
+            <a href="#workflow" className="text-muted-foreground hover:text-foreground transition-colors">WORKFLOW</a>
+            <a href="#demo" className="text-muted-foreground hover:text-foreground transition-colors">DEMO</a>
+            <a href="#code-examples" className="text-muted-foreground hover:text-foreground transition-colors">CODE EXAMPLES</a>
+            <a href="#creators" className="text-muted-foreground hover:text-foreground transition-colors">FROM THE CREATORS</a>
+            <Link 
+              href="/workflow" 
+              className="px-4 py-2 bg-[var(--neon-cyan)]/10 border-2 border-[var(--neon-cyan)]/50 text-[var(--neon-cyan)] font-bold hover:bg-[var(--neon-cyan)]/20 hover:shadow-[0_0_20px_rgba(0,255,255,0.4)] transition-all"
+            >
+              SIMULATOR →
+            </Link>
+          </div>
         </div>
       </motion.nav>
 
@@ -108,8 +113,8 @@ export default function Home() {
                   initial={{ opacity: 0, y: 20 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
-                  transition={{ delay: index * 0.1 }}
-                  whileHover={{ scale: 1.05, y: -5 }}
+                  transition={{ delay: index * 0.1, duration: 0.2 }}
+                  whileHover={{ y: -5 }}
                 >
                   <Icon className="w-10 h-10 mb-3 text-[var(--neon-cyan)]" />
                   <h3 className="text-lg font-bold mb-2" style={{ fontFamily: 'var(--font-display)' }}>
@@ -139,7 +144,7 @@ export default function Home() {
               className="text-4xl md:text-5xl font-bold mb-4"
               style={{ fontFamily: 'var(--font-display)' }}
             >
-              PIPELINE <span className="text-gradient-cyan">ARCHITECTURE</span>
+              WORKFLOW <span className="text-gradient-cyan">ARCHITECTURE</span>
             </h2>
             <p className="text-base md:text-lg text-muted-foreground max-w-2xl mx-auto">
               Seven-stage automated processing from video to production-ready patch
@@ -180,7 +185,7 @@ export default function Home() {
       </section>
 
       {/* Code Examples Section */}
-      <section className="relative z-10 py-12 md:py-24 border-t border-border/30">
+      <section id="code-examples" className="relative z-10 py-12 md:py-24 border-t border-border/30">
         <div className="container mx-auto px-4 md:px-8">
           <motion.div 
             className="text-center mb-12 md:mb-16"

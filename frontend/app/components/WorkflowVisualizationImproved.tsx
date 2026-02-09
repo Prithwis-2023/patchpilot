@@ -255,15 +255,15 @@ export default function WorkflowVisualizationImproved() {
         </svg>
       </div>
 
-      {/* Selected Node Details - Desktop only */}
+      {/* Selected Node Details - Desktop only - Improved contrast and integration */}
       {selectedNode && (
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3 }}
-          className="hidden md:block"
+          className="hidden md:block mt-8"
         >
-          <Card className={`p-6 bg-card/50 backdrop-blur-sm border-2 ${getBorderClass(nodes.find(n => n.id === selectedNode)!.color)}`}>
+          <div className={`p-6 bg-card/80 backdrop-blur-xl border-2 ${getBorderClass(nodes.find(n => n.id === selectedNode)!.color)} rounded-lg`}>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {/* Step info */}
               <div className="space-y-3">
@@ -274,7 +274,7 @@ export default function WorkflowVisualizationImproved() {
                   <h4 className={`text-xl font-bold ${getColorClass(nodes.find(n => n.id === selectedNode)!.color)}`} style={{ fontFamily: 'var(--font-display)' }}>
                     {nodes.find(n => n.id === selectedNode)!.label}
                   </h4>
-                  <p className="text-sm text-muted-foreground mt-1">
+                  <p className="text-sm text-foreground/80 mt-1">
                     {nodes.find(n => n.id === selectedNode)!.description}
                   </p>
                 </div>
@@ -282,29 +282,29 @@ export default function WorkflowVisualizationImproved() {
 
               {/* Details */}
               <div className="md:col-span-2">
-                <h5 className="text-sm font-bold text-muted-foreground mb-4 uppercase">Process Details</h5>
+                <h5 className="text-sm font-bold text-foreground/60 mb-4 uppercase">Process Details</h5>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   {nodes.find(n => n.id === selectedNode)!.details.map((detail, index) => (
                     <motion.div
                       key={index}
-                      className="p-3 bg-muted/20 border border-border/30 rounded"
+                      className="p-3 bg-muted/30 border border-border/50 rounded"
                       initial={{ opacity: 0, x: -10 }}
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ delay: index * 0.1 }}
                     >
-                      <div className="text-sm font-mono text-muted-foreground">
-                        <span className={`${getColorClass(nodes.find(n => n.id === selectedNode)!.color)}`}>→</span> {detail}
+                      <div className="text-sm font-mono text-foreground">
+                        <span className={`text-lg font-bold ${getColorClass(nodes.find(n => n.id === selectedNode)!.color)}`}>→</span> <span className="text-foreground">{detail}</span>
                       </div>
                     </motion.div>
                   ))}
                 </div>
               </div>
             </div>
-          </Card>
+          </div>
         </motion.div>
       )}
 
-      {/* Mobile-friendly step list - only show selected node details */}
+      {/* Mobile-friendly step list - minimal, no extra buttons */}
       <div className="md:hidden space-y-3">
         {selectedNode && (
           <motion.div
@@ -312,7 +312,7 @@ export default function WorkflowVisualizationImproved() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3 }}
           >
-            <Card className={`p-6 bg-card/50 backdrop-blur-sm border-2 ${getBorderClass(nodes.find(n => n.id === selectedNode)!.color)}`}>
+            <div className={`p-6 bg-card/80 backdrop-blur-xl border-2 ${getBorderClass(nodes.find(n => n.id === selectedNode)!.color)} rounded-lg`}>
               <div className="space-y-4">
                 <div className="flex items-center gap-4">
                   <div className={`text-3xl font-bold ${getColorClass(nodes.find(n => n.id === selectedNode)!.color)}`}>
@@ -322,56 +322,30 @@ export default function WorkflowVisualizationImproved() {
                     <h4 className={`text-lg font-bold ${getColorClass(nodes.find(n => n.id === selectedNode)!.color)}`} style={{ fontFamily: 'var(--font-display)' }}>
                       {nodes.find(n => n.id === selectedNode)!.label}
                     </h4>
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-sm text-foreground/80">
                       {nodes.find(n => n.id === selectedNode)!.description}
                     </p>
                   </div>
                 </div>
                 <div className="pt-4 border-t border-border/30">
-                  <h5 className="text-sm font-bold text-muted-foreground mb-3 uppercase">Process Details</h5>
+                  <h5 className="text-sm font-bold text-foreground/60 mb-3 uppercase">Process Details</h5>
                   <div className="space-y-2">
                     {nodes.find(n => n.id === selectedNode)!.details.map((detail, index) => (
                       <div
                         key={index}
-                        className="p-3 bg-muted/20 border border-border/30 rounded"
+                        className="p-3 bg-muted/30 border border-border/50 rounded"
                       >
-                        <div className="text-sm font-mono text-muted-foreground">
-                          <span className={`${getColorClass(nodes.find(n => n.id === selectedNode)!.color)}`}>→</span> {detail}
+                        <div className="text-sm font-mono text-foreground">
+                          <span className={`text-lg font-bold ${getColorClass(nodes.find(n => n.id === selectedNode)!.color)}`}>→</span> <span className="text-foreground">{detail}</span>
                         </div>
                       </div>
                     ))}
                   </div>
                 </div>
               </div>
-            </Card>
+            </div>
           </motion.div>
         )}
-        {/* Node selector buttons */}
-        <div className="grid grid-cols-2 gap-2">
-          {nodes.map((node) => {
-            const isSelected = selectedNode === node.id;
-            const borderClass = isSelected ? getBorderClass(node.color) : "border-border/30";
-            const bgClass = isSelected 
-              ? (node.color === "cyan" ? "bg-[var(--neon-cyan)]/10" : 
-                 node.color === "magenta" ? "bg-[var(--neon-magenta)]/10" : 
-                 "bg-[var(--neon-lime)]/10")
-              : "bg-muted/5";
-            return (
-              <motion.button
-                key={node.id}
-                onClick={() => setSelectedNode(node.id)}
-                className={`p-3 text-left border-2 transition-all ${borderClass} ${bgClass}`}
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-              >
-                <div className={`text-lg font-bold ${getColorClass(node.color)}`}>
-                  {node.step}
-                </div>
-                <div className="text-xs font-bold mt-1">{node.label}</div>
-              </motion.button>
-            );
-          })}
-        </div>
       </div>
     </div>
   );

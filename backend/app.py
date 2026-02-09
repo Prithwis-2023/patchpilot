@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 from schemas import AnalysisResponse, TestResponse, PatchRequest, PatchResponse
 from video_utils import extract_frames
 from gemini import analyze_video, generate_test, generate_patch
-from playwright_runner import run_playwright_test
+from playwright_runner import run_playwright_test, check_playwright_setup, setup_playwright_runner_dir
 import shutil
 import os
 import traceback
@@ -51,6 +51,36 @@ os.makedirs(UPLOAD_DIR, exist_ok=True)
 @app.get("/health")
 async def health():
     return {"ok": True}
+
+@app.get("/selfcheck")
+async def selfcheck():
+    """
+    Self-check endpoint to verify Playwright setup.
+    Returns a detailed report of what's installed and what's missing.
+    """
+    try:
+        runner_dir = setup_playwright_runner_dir()
+    except Exception as e:
+        return {
+            "status": "error",
+            "message": f"Failed to set up runner directory: {str(e)}",
+            "checks": {}
+        }
+    
+    checks = check_playwright_setup(runner_dir)
+    
+    all_ok = (
+        checks["node"] and 
+        checks["npx"] and 
+        checks["package_json"] and 
+        checks["playwright_installed"]
+    )
+    
+    return {
+        "status": "ok" if all_ok else "warning",
+        "checks": checks,
+        "runner_dir": runner_dir
+    }
 
 @app.post("/analyze", response_model=AnalysisResponse)
 async def analyze(file: UploadFile = File(...)):

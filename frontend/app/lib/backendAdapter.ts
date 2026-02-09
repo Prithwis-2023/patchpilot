@@ -420,10 +420,48 @@ export class HttpAdapter implements BackendAdapter {
     analysis: AnalysisResult;
     run: RunResult;
   }): Promise<PatchResult> {
+    // Convert AnalysisResult to AnalysisResponse format expected by backend
+    // Backend requires: title, timeline as [{t: int, event: string}], reproSteps as string[]
+    const backendTimeline = input.analysis.timeline.map((item) => {
+      // Parse timestamp (MM:SS) to seconds
+      const [minutes, seconds] = item.timestamp.split(":").map(Number);
+      const totalSeconds = (minutes || 0) * 60 + (seconds || 0);
+      return {
+        t: totalSeconds,
+        event: item.description,
+      };
+    });
+
+    const backendReproSteps = input.analysis.reproSteps.map((step) => step.description);
+
+    // Backend requires title field - derive from expected or use default
+    const title = input.analysis.expected 
+      ? input.analysis.expected.substring(0, 100) // Limit length
+      : "Bug Analysis";
+
+    const analysisResponse = {
+      title,
+      timeline: backendTimeline,
+      reproSteps: backendReproSteps,
+      expected: input.analysis.expected,
+      actual: input.analysis.actual,
+      targetUrl: input.analysis.targetUrl || null,
+    };
+
+    // Combine error logs (stderr + stdout for context)
+    const errorLog = [
+      input.run.stderr || "",
+      input.run.stdout || "",
+    ]
+      .filter(Boolean)
+      .join("\n\n--- Output ---\n\n");
+
     const payload = {
-      analysis: input.analysis,
-      error_log: input.run.stderr || input.run.stdout,
+      analysis: analysisResponse,
+      error_log: errorLog || "No error log available",
       run_result: input.run,
+      failing_test: input.run.status === "failed" ? undefined : null, // Optional field
+      original_code: null, // Optional field
     };
 
     try {
@@ -681,9 +719,26 @@ export class HttpAdapter implements BackendAdapter {
       );
     }
 
+    // Backend returns rationale as List[str] (array of strings)
+    // Frontend expects rationale as string
+    let rationale: string;
+    if (Array.isArray(obj.rationale)) {
+      // Backend format: array of strings -> join with newlines
+      rationale = obj.rationale.map((r) => String(r)).join("\n");
+    } else if (typeof obj.rationale === "string") {
+      // Already a string (fallback)
+      rationale = obj.rationale;
+    } else {
+      throw new NormalizationError(
+        "Patch response rationale must be string or array of strings",
+        ["rationale"],
+        raw
+      );
+    }
+
     return {
       diff: String(obj.diff),
-      rationale: String(obj.rationale),
+      rationale,
       risks: Array.isArray(obj.risks)
         ? obj.risks.map((r) => String(r))
         : [],

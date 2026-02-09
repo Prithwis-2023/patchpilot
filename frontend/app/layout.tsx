@@ -51,8 +51,8 @@ export default function RootLayout({
       <body
         className={`${jetbrainsMono.variable} ${ibmPlexSans.variable} ${firaCode.variable} antialiased bg-background text-foreground`}
       >
-        {/* Global background layers */}
-        <div className="fixed inset-0 diagonal-grid opacity-30 pointer-events-none z-0" />
+        {/* Global background layers - behind content but visible */}
+        <div className="fixed inset-0 diagonal-grid opacity-50 pointer-events-none z-0" />
         <div className="fixed inset-0 scanlines pointer-events-none z-0" />
         <DynamicBackground />
         <FloatingParticles />

@@ -9,7 +9,8 @@ import CodePanel from "./CodePanel";
 import RunOutputPanel from "./RunOutputPanel";
 import ExportPanel from "./ExportPanel";
 import UploadCard from "./UploadCard";
-import { fadeSlide } from "../lib/motion";
+import DiffViewer from "./DiffViewer";
+import { fadeSlide, buttonHover, buttonPress } from "../lib/motion";
 
 interface WorkspaceProps {
   activeView: WorkflowStep | null;
@@ -242,6 +243,7 @@ export default function Workspace({
                   isLoading={testLoading}
                   error={testError}
                   onRetry={onTestRetry}
+                  useSyntaxHighlight={true}
                 />
               </motion.div>
             )}
@@ -252,13 +254,13 @@ export default function Workspace({
                 animate="visible"
                 exit="exit"
                 variants={fadeSlide}
-                className="rounded-lg border border-gray-200 bg-white p-4 glass"
+                className="card rounded-lg p-4"
               >
-                <h3 className="text-sm font-semibold text-gray-800">Test Information</h3>
+                <h3 className="text-sm font-semibold text-primary">Test Information</h3>
                 {test?.filename && (
                   <div className="mt-2">
-                    <span className="text-xs text-gray-500">Filename:</span>
-                    <p className="mt-1 font-mono text-sm text-gray-700">{test.filename}</p>
+                    <span className="text-xs text-muted-2">Filename:</span>
+                    <p className="mt-1 font-mono text-sm text-muted">{test.filename}</p>
                   </div>
                 )}
               </motion.div>
@@ -400,14 +402,51 @@ export default function Workspace({
                 animate="visible"
                 exit="exit"
                 variants={fadeSlide}
+                className="card w-full rounded-lg p-6"
               >
-                <CodePanel
-                  title="Patch Diff"
-                  code={patch?.diff}
-                  isLoading={patchLoading}
-                  error={patchError}
-                  onRetry={onPatchRetry}
-                />
+                <div className="mb-4 flex items-center justify-between">
+                  <h2 className="text-xl font-semibold text-primary">Patch Diff</h2>
+                  {patch?.diff && (
+                    <motion.button
+                      onClick={() => patch?.diff && navigator.clipboard.writeText(patch.diff)}
+                      whileHover={buttonHover}
+                      whileTap={buttonPress}
+                      className="btn-secondary relative overflow-hidden rounded-md px-3 py-1.5 text-sm font-medium"
+                    >
+                      <span className="relative z-10">Copy Diff</span>
+                    </motion.button>
+                  )}
+                </div>
+                {patchError ? (
+                  <div className="card rounded-md p-4" style={{ borderColor: "var(--danger)" }}>
+                    <p className="text-sm font-medium" style={{ color: "var(--danger)" }}>Error generating patch diff</p>
+                    <p className="mt-1 text-sm" style={{ color: "var(--danger)" }}>{patchError}</p>
+                    {onPatchRetry && (
+                      <motion.button
+                        onClick={onPatchRetry}
+                        whileHover={buttonHover}
+                        whileTap={buttonPress}
+                        className="btn-secondary mt-3 rounded-md px-3 py-1.5 text-sm font-medium"
+                        style={{ backgroundColor: "var(--danger)", color: "var(--surface-1)" }}
+                      >
+                        Retry
+                      </motion.button>
+                    )}
+                  </div>
+                ) : patchLoading ? (
+                  <div className="flex items-center gap-2 text-muted">
+                    <div className="h-4 w-4 animate-spin rounded-full border-2" style={{ borderColor: "var(--border)", borderTopColor: "var(--accent)" }}></div>
+                    <span>Generating fix patch...</span>
+                  </div>
+                ) : patch?.diff ? (
+                  <DiffViewer diff={patch.diff} />
+                ) : (
+                  <div className="card rounded-md p-4 text-center">
+                    <p className="text-sm text-muted">
+                      A unified diff patch with suggested fixes will appear here after test execution.
+                    </p>
+                  </div>
+                )}
               </motion.div>
             )}
             {patchTab === "rationale" && (

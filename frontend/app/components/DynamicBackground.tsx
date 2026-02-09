@@ -38,8 +38,8 @@ export default function DynamicBackground() {
       time += 0.01;
 
       // Draw animated grid lines
-      ctx.strokeStyle = "rgba(0, 255, 255, 0.05)";
-      ctx.lineWidth = 1;
+      ctx.strokeStyle = "rgba(0, 255, 255, 0.15)";
+      ctx.lineWidth = 1.5;
 
       // Horizontal lines with wave effect
       for (let i = 0; i < canvas.height; i += 60) {
@@ -56,7 +56,7 @@ export default function DynamicBackground() {
       }
 
       // Vertical lines with wave effect
-      ctx.strokeStyle = "rgba(255, 0, 255, 0.05)";
+      ctx.strokeStyle = "rgba(255, 0, 255, 0.15)";
       for (let i = 0; i < canvas.width; i += 60) {
         ctx.beginPath();
         for (let y = 0; y < canvas.height; y += 10) {
@@ -71,32 +71,32 @@ export default function DynamicBackground() {
       }
 
       // Draw moving particles
-      ctx.fillStyle = "rgba(0, 255, 255, 0.1)";
+      ctx.fillStyle = "rgba(0, 255, 255, 0.4)";
       for (let i = 0; i < 5; i++) {
         const x = (canvas.width / 5) * i + Math.sin(time + i) * 50;
         const y = canvas.height / 2 + Math.cos(time + i * 0.5) * 100;
+        ctx.beginPath();
+        ctx.arc(x, y, 4, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      // Draw lime particles
+      ctx.fillStyle = "rgba(0, 255, 0, 0.35)";
+      for (let i = 0; i < 5; i++) {
+        const x = (canvas.width / 5) * i + Math.cos(time * 0.7 + i) * 60;
+        const y = canvas.height / 3 + Math.sin(time * 0.7 + i * 0.5) * 80;
         ctx.beginPath();
         ctx.arc(x, y, 3, 0, Math.PI * 2);
         ctx.fill();
       }
 
-      // Draw lime particles
-      ctx.fillStyle = "rgba(0, 255, 0, 0.08)";
-      for (let i = 0; i < 5; i++) {
-        const x = (canvas.width / 5) * i + Math.cos(time * 0.7 + i) * 60;
-        const y = canvas.height / 3 + Math.sin(time * 0.7 + i * 0.5) * 80;
-        ctx.beginPath();
-        ctx.arc(x, y, 2, 0, Math.PI * 2);
-        ctx.fill();
-      }
-
       // Draw magenta particles
-      ctx.fillStyle = "rgba(255, 0, 255, 0.08)";
+      ctx.fillStyle = "rgba(255, 0, 255, 0.35)";
       for (let i = 0; i < 5; i++) {
         const x = (canvas.width / 5) * i + Math.sin(time * 0.5 + i) * 40;
         const y = (canvas.height * 2) / 3 + Math.cos(time * 0.5 + i * 0.5) * 60;
         ctx.beginPath();
-        ctx.arc(x, y, 2.5, 0, Math.PI * 2);
+        ctx.arc(x, y, 3.5, 0, Math.PI * 2);
         ctx.fill();
       }
 
@@ -119,14 +119,14 @@ export default function DynamicBackground() {
       <canvas
         ref={canvasRef}
         className="fixed inset-0 pointer-events-none z-0"
-        style={{ mixBlendMode: "screen" }}
+        style={{ mixBlendMode: "screen", opacity: 1 }}
       />
 
       {/* Floating geometric shapes */}
       <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
         {/* Top-left floating shape */}
         <motion.div
-          className="absolute w-96 h-96 border-2 border-[var(--neon-cyan)]/20 rounded-full"
+          className="absolute w-96 h-96 border-2 border-[var(--neon-cyan)]/60 rounded-full"
           style={{ top: "-100px", left: "-100px" }}
           animate={{
             x: [0, 50, 0],
@@ -142,7 +142,7 @@ export default function DynamicBackground() {
 
         {/* Top-right floating shape */}
         <motion.div
-          className="absolute w-80 h-80 border-2 border-[var(--neon-magenta)]/20"
+          className="absolute w-80 h-80 border-2 border-[var(--neon-magenta)]/60"
           style={{
             top: "-50px",
             right: "-50px",
@@ -162,7 +162,7 @@ export default function DynamicBackground() {
 
         {/* Bottom-left floating shape */}
         <motion.div
-          className="absolute w-72 h-72 border-2 border-[var(--neon-lime)]/20"
+          className="absolute w-72 h-72 border-2 border-[var(--neon-lime)]/60"
           style={{
             bottom: "-50px",
             left: "-50px",
@@ -182,7 +182,7 @@ export default function DynamicBackground() {
 
         {/* Bottom-right floating shape */}
         <motion.div
-          className="absolute w-96 h-96 border-2 border-[var(--neon-cyan)]/15"
+          className="absolute w-96 h-96 border-2 border-[var(--neon-cyan)]/50"
           style={{
             bottom: "-100px",
             right: "-100px"
