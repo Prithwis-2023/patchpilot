@@ -145,27 +145,35 @@ def analyze_video(frames):
                     pass
 
 def generate_test(analysis):
+    target_url = analysis.targetUrl or 'http://localhost:3001/'
     prompt = f"""
-    You are a senior SDET writing Playwright tests.
+    You are a senior SDET. Write a robust Playwright test from these steps: {analysis.reproSteps}
+    
+    TARGET URL: {target_url}
 
-    Write a robust Playwright test from these reproduction steps:
+    ### DYNAMIC SELECTOR STRATEGY:
+    1. HANDLING DUPLICATES: If an element might appear multiple times (like a product name), ALWAYS append .first() to the locator.
+    2. PRIORITY ORDER:
+       - page.getByTestId('id').first() (Use if you see test IDs in the context)
+       - page.getByRole('button', {{ name: 'Text' }}).first()
+       - page.getByText('Text').first()
+       - page.locator('input[placeholder="Text"]').first()
+    3. PRIORITY ORDER:
+       - page.getByTestId('id').first()
+       - page.getByRole('button', {{ name: 'Text' }}).first()
+       - page.getByText('Text', {{ exact: false }}).first() # Add exact: false for better matching
+       - page.locator('input[placeholder="Text"]').first()
+    4. ASSERTIONS:
+       - Keep assertions simple. Instead of complex parent-child chaining, just check if the problematic text is visible on the page.
+       - Example: await expect(page.getByText('$0.00')).toBeVisible();
 
-    {analysis.reproSteps}
-
-    Target URL: {analysis.targetUrl or 'http://localhost:3001'}
-
-    Rules:
-    - Use @playwright/test syntax
-    - ALWAYS use full URLs with protocol (e.g., http://localhost:3001, NOT localhost:3001)
-    - STRONGLY PREFER getByTestId() when data-testid attributes are available in the DOM
-    - Fallback order: getByTestId > getByRole > getByLabelText > getByText > CSS selectors
-    - Avoid fragile CSS class selectors unless no other option exists
-    - Include assertions that verify the bug described in reproduction steps
-    - Include screenshot on failure for debugging
-    - Use page.goto() with full URL including protocol
-    - Use explicit waits when needed: await page.waitForLoadState('networkidle') after navigation
-    - Set reasonable timeouts: test.setTimeout(30000) to prevent hanging
-    - Analyze the reproduction steps to determine what selectors and assertions are needed
+    ### Rules:
+    - Use @playwright/test syntax.
+    - Start with: await page.goto('{target_url}');
+    - Use await page.waitForLoadState('networkidle');
+    - CRITICAL: After clicking 'Add to cart' or any button that opens a drawer/modal, add a small delay: `await page.waitForTimeout(1000);` 
+    - Ensure the 'Go to checkout' button is visible before clicking: `await expect(page.getByRole('button', {{ name: 'Go to checkout' }}).first()).toBeVisible();`
+    - Include assertions that verify the bug: "{analysis.actual}".
 
     Return ONLY valid JSON:
 

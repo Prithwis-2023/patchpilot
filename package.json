@@ -9,5 +9,8 @@
     "start": "pnpm -C frontend start",
     "lint": "pnpm -C frontend lint",
     "typecheck": "pnpm -C frontend typecheck"
+  },
+  "dependencies": {
+    "pnpm": "^10.29.2"
   }
 }
