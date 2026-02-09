@@ -64,7 +64,7 @@ export default function ExportPanel({
         <div className="space-y-3">
           <div className="card rounded-md p-4" style={{ borderColor: "var(--danger)" }}>
             <p className="text-sm font-medium" style={{ color: "var(--danger)" }}>Error generating bug report</p>
-            <p className="mt-1 text-sm" style={{ color: "var(--danger)" }}>{error}</p>
+            <p className="mt-1 text-sm break-words overflow-wrap-anywhere" style={{ color: "var(--danger)" }}>{error}</p>
           </div>
           {onRetry && (
             <button
@@ -78,7 +78,7 @@ export default function ExportPanel({
           {config.isDevelopment && (
             <details className="mt-2">
               <summary className="cursor-pointer text-xs" style={{ color: "var(--danger)" }}>Show technical details</summary>
-              <pre className="mt-2 overflow-x-auto rounded p-2 text-xs" style={{ backgroundColor: "var(--danger)", opacity: 0.1, color: "var(--danger)" }}>
+              <pre className="mt-2 overflow-x-auto overflow-y-auto max-h-48 rounded p-2 text-xs whitespace-pre-wrap break-words overflow-wrap-anywhere" style={{ backgroundColor: "var(--danger)", opacity: 0.1, color: "var(--danger)" }}>
                 {error}
               </pre>
             </details>

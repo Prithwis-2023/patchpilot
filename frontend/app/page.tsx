@@ -8,6 +8,7 @@ import WorkflowVisualizationImproved from "./components/WorkflowVisualizationImp
 import CreatorSection from "./components/CreatorSection";
 import HeroSection from "./components/HeroSection";
 import MacOSCodeEditor from "./components/MacOSCodeEditor";
+import Footer from "./components/Footer";
 
 /* 
   Design Philosophy: Cybernetic Brutalism
@@ -20,10 +21,10 @@ import MacOSCodeEditor from "./components/MacOSCodeEditor";
 
 export default function Home() {
   return (
-    <div className="min-h-screen relative bg-background/85">
+    <div className="min-h-screen relative bg-background/60">
       {/* Navigation - sticky, right cluster, consistent naming */}
       <motion.nav 
-        className="sticky top-0 z-50 border-b border-border/50 backdrop-blur-sm bg-background/90"
+        className="sticky top-0 z-50 border-b border-border/50 backdrop-blur-sm bg-background/75"
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
@@ -215,55 +216,7 @@ export default function Home() {
       <CreatorSection />
 
       {/* Footer */}
-      <motion.footer
-        className="relative z-10 border-t border-border/30 bg-muted/5 backdrop-blur-sm"
-        initial={{ opacity: 0 }}
-        whileInView={{ opacity: 1 }}
-        viewport={{ once: true }}
-        transition={{ duration: 0.6 }}
-      >
-        <div className="container mx-auto px-4 md:px-8 py-12 md:py-16">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-12">
-            <div>
-              <h3 className="font-bold mb-4" style={{ fontFamily: 'var(--font-display)' }}>PRODUCT</h3>
-              <ul className="space-y-2 text-sm text-muted-foreground">
-                <li><a href="#" className="hover:text-foreground transition">Features</a></li>
-                <li><a href="#" className="hover:text-foreground transition">Pricing</a></li>
-                <li><a href="#" className="hover:text-foreground transition">API</a></li>
-              </ul>
-            </div>
-            <div>
-              <h3 className="font-bold mb-4" style={{ fontFamily: 'var(--font-display)' }}>COMPANY</h3>
-              <ul className="space-y-2 text-sm text-muted-foreground">
-                <li><a href="#" className="hover:text-foreground transition">About</a></li>
-                <li><a href="#" className="hover:text-foreground transition">Blog</a></li>
-                <li><a href="#" className="hover:text-foreground transition">Contact</a></li>
-              </ul>
-            </div>
-            <div>
-              <h3 className="font-bold mb-4" style={{ fontFamily: 'var(--font-display)' }}>LEGAL</h3>
-              <ul className="space-y-2 text-sm text-muted-foreground">
-                <li><a href="#" className="hover:text-foreground transition">Privacy</a></li>
-                <li><a href="#" className="hover:text-foreground transition">Terms</a></li>
-                <li><a href="#" className="hover:text-foreground transition">Security</a></li>
-              </ul>
-            </div>
-            <div>
-              <h3 className="font-bold mb-4" style={{ fontFamily: 'var(--font-display)' }}>SOCIAL</h3>
-              <ul className="space-y-2 text-sm text-muted-foreground">
-                <li><a href="#" className="hover:text-foreground transition">Twitter</a></li>
-                <li><a href="#" className="hover:text-foreground transition">GitHub</a></li>
-                <li><a href="#" className="hover:text-foreground transition">Discord</a></li>
-              </ul>
-            </div>
-          </div>
-
-          <div className="border-t border-border/30 pt-8 flex flex-col md:flex-row items-center justify-between text-sm text-muted-foreground">
-            <div>© 2026 PatchPilot. All rights reserved.</div>
-            <div className="mt-4 md:mt-0">Built with precision. Powered by Gemini 3.</div>
-          </div>
-        </div>
-      </motion.footer>
+      <Footer />
     </div>
   );
 }

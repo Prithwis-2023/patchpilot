@@ -69,10 +69,10 @@ export default function HeroSection() {
               transition={{ delay: 0.5 }}
             >
               {[
-                { number: "10x", label: "Faster Bug Fixing" },
-                { number: "99%", label: "Accuracy Rate" },
-                { number: "500+", label: "Teams Using" },
-                { number: "2.3s", label: "Avg Processing" }
+                { number: "AI", label: "Powered by Gemini 3" },
+                { number: "100%", label: "Open Source" },
+                { number: "0", label: "Setup Required" },
+                { number: "∞", label: "Free to Use" }
               ].map((item, index) => (
                 <div key={index} className="space-y-2">
                   <div className="text-3xl md:text-4xl font-bold text-[var(--neon-cyan)]">
@@ -171,14 +171,14 @@ export default function HeroSection() {
                 <div className="space-y-4">
                   {[
                     { label: "Video Analysis", progress: 100 },
-                    { label: "Step Extraction", progress: 85 },
-                    { label: "Test Generation", progress: 60 },
-                    { label: "Patch Suggestion", progress: 30 }
+                    { label: "Step Extraction", progress: 100 },
+                    { label: "Test Generation", progress: 100 },
+                    { label: "Patch Suggestion", progress: 100 }
                   ].map((item, index) => (
                     <div key={index} className="space-y-2">
                       <div className="flex justify-between text-xs font-mono">
                         <span className="text-muted-foreground">{item.label}</span>
-                        <span className="text-[var(--neon-cyan)]">{item.progress}%</span>
+                        <span className="text-[var(--neon-lime)]">✓</span>
                       </div>
                       <div className="h-1 bg-muted/30 border border-border/30 overflow-hidden rounded">
                         <motion.div

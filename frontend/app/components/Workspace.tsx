@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import Image from "next/image";
 import { WorkflowStep, type AnalysisResult, type GeneratedTest, type RunResult, type PatchResult, type BugReport } from "../lib/types";
 import TimelinePanel from "./TimelinePanel";
 import StepsPanel from "./StepsPanel";
@@ -335,10 +336,11 @@ export default function Workspace({
               >
                 <h3 className="mb-4 text-sm font-semibold text-primary">Screenshot</h3>
                 <div className="relative h-96 w-full overflow-auto rounded-md border border-soft surface-2">
-                  <img
+                  <Image
                     src={runResult.screenshotUrl}
                     alt="Test failure screenshot"
-                    className="h-full w-full object-contain"
+                    fill
+                    className="object-contain"
                   />
                 </div>
               </motion.div>

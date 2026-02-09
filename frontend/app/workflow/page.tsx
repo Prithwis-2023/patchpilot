@@ -3,18 +3,21 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
+import Image from "next/image";
 import { Card } from "@/app/components/ui/card";
 import { Button } from "@/app/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/app/components/ui/tabs";
 import { Upload, Play, CheckCircle2, AlertCircle, Code2, Download, Copy, Loader2 } from "lucide-react";
 import MacOSCodeEditor from "@/app/components/MacOSCodeEditor";
 import DiffViewer from "@/app/components/DiffViewer";
+import MarkdownPreview from "@/app/components/MarkdownPreview";
 import { usePatchpilotWorkflow } from "@/app/lib/usePatchpilotWorkflow";
 import { WorkflowStep } from "@/app/lib/types";
 import { useCopyFeedback } from "@/app/lib/useCopyFeedback";
 import { useBackendHealth } from "@/app/lib/useBackendHealth";
 import { type ApiCallInfo, BackendError } from "@/app/lib/backendAdapter";
 import { ChevronDown, ChevronUp, Code, Wifi, WifiOff } from "lucide-react";
+import Footer from "@/app/components/Footer";
 
 /* 
   Design Philosophy: Cybernetic Brutalism
@@ -48,6 +51,8 @@ export default function WorkflowPage() {
   const [activeTab, setActiveTab] = useState<WorkflowTab>("upload");
   const [devPanelOpen, setDevPanelOpen] = useState(false);
   const [lastApiCall, setLastApiCall] = useState<ApiCallInfo | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
   const copyFeedback = useCopyFeedback();
   const { health } = useBackendHealth(pipelineMode);
 
@@ -99,8 +104,40 @@ export default function WorkflowPage() {
 
   const handleFileUpload = (file: File) => {
     setVideo(file);
-    // Don't auto-advance - let user see upload completion
-    setTimeout(() => analyze(), 500);
+    // Don't auto-analyze - let user click button
+  };
+
+  const handleUploadAndAnalyze = async () => {
+    if (!uploadedFile) return;
+    
+    setIsUploading(true);
+    setUploadProgress(0);
+    
+    // Simulate upload progress
+    const progressInterval = setInterval(() => {
+      setUploadProgress((prev) => {
+        if (prev >= 90) {
+          clearInterval(progressInterval);
+          return 90;
+        }
+        return prev + 10;
+      });
+    }, 100);
+    
+    try {
+      await analyze();
+      setUploadProgress(100);
+      setTimeout(() => {
+        setIsUploading(false);
+        setUploadProgress(0);
+      }, 500);
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    } catch (error) {
+      setIsUploading(false);
+      setUploadProgress(0);
+    } finally {
+      clearInterval(progressInterval);
+    }
   };
 
   const handleCopy = async (text: string) => {
@@ -120,19 +157,19 @@ export default function WorkflowPage() {
   };
 
   const tabs = [
-    { value: "upload", label: "Upload", icon: Upload },
-    { value: "analysis", label: "Analysis", icon: Play },
-    { value: "test", label: "Test", icon: Code2 },
-    { value: "results", label: "Results", icon: CheckCircle2 },
-    { value: "patch", label: "Patch", icon: Download },
-    { value: "export", label: "Export", icon: Download },
+    { value: "upload", label: "Upload", icon: Upload, step: WorkflowStep.UPLOAD },
+    { value: "analysis", label: "Analysis", icon: Play, step: WorkflowStep.ANALYZE },
+    { value: "test", label: "Test", icon: Code2, step: WorkflowStep.TEST },
+    { value: "results", label: "Results", icon: CheckCircle2, step: WorkflowStep.RUN },
+    { value: "patch", label: "Patch", icon: Download, step: WorkflowStep.PATCH },
+    { value: "export", label: "Export", icon: Download, step: WorkflowStep.EXPORT },
   ];
 
   return (
-    <div className="min-h-screen relative bg-background/85">
+    <div className="min-h-screen relative bg-background/60">
       {/* Navigation - consistent with Home nav */}
       <motion.nav 
-        className="sticky top-0 z-50 border-b border-border/50 backdrop-blur-sm bg-background/90"
+        className="sticky top-0 z-50 border-b border-border/50 backdrop-blur-sm bg-background/75"
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
@@ -172,23 +209,23 @@ export default function WorkflowPage() {
                 )}
               </div>
             )}
-            <div className="flex items-center gap-1 bg-muted/20 border border-border/30 rounded p-1">
+            <div className="flex items-center gap-2 bg-muted/30 border-2 border-border/50 rounded-lg p-1 shadow-lg">
               <button
                 onClick={() => setPipelineMode("sample")}
-                className={`px-3 py-1.5 rounded text-xs font-mono transition-all ${
+                className={`px-4 py-2 rounded-md text-sm font-bold font-mono transition-all ${
                   pipelineMode === "sample"
-                    ? "bg-[var(--neon-cyan)]/20 text-[var(--neon-cyan)] border border-[var(--neon-cyan)]/50"
-                    : "text-muted-foreground hover:text-foreground"
+                    ? "bg-[var(--neon-cyan)]/30 text-[var(--neon-cyan)] border-2 border-[var(--neon-cyan)] shadow-[0_0_15px_rgba(0,255,255,0.3)]"
+                    : "text-muted-foreground hover:text-foreground hover:bg-muted/20"
                 }`}
               >
                 Sample
               </button>
               <button
                 onClick={() => setPipelineMode("backend")}
-                className={`px-3 py-1.5 rounded text-xs font-mono transition-all ${
+                className={`px-4 py-2 rounded-md text-sm font-bold font-mono transition-all ${
                   pipelineMode === "backend"
-                    ? "bg-[var(--neon-cyan)]/20 text-[var(--neon-cyan)] border border-[var(--neon-cyan)]/50"
-                    : "text-muted-foreground hover:text-foreground"
+                    ? "bg-[var(--neon-cyan)]/30 text-[var(--neon-cyan)] border-2 border-[var(--neon-cyan)] shadow-[0_0_15px_rgba(0,255,255,0.3)]"
+                    : "text-muted-foreground hover:text-foreground hover:bg-muted/20"
                 }`}
               >
                 Backend
@@ -198,7 +235,7 @@ export default function WorkflowPage() {
               variant="ghost"
               size="sm"
               onClick={reset}
-              className="text-muted-foreground hover:text-foreground"
+              className="border-2 border-[var(--neon-magenta)]/50 bg-[var(--neon-magenta)]/10 hover:bg-[var(--neon-magenta)]/20 text-[var(--neon-magenta)] font-bold px-4 py-2 shadow-lg hover:shadow-[var(--neon-magenta)]/30"
             >
               Reset
             </Button>
@@ -242,7 +279,7 @@ export default function WorkflowPage() {
                 {tabs.map((tab) => {
                   const Icon = tab.icon;
                   const enabled = isTabEnabled(tab.value as WorkflowTab);
-                  const stepStatus = steps[tab.value as WorkflowStep]?.status;
+                  const stepStatus = steps[tab.step]?.status;
                   return (
                     <TabsTrigger
                       key={tab.value}
@@ -291,10 +328,56 @@ export default function WorkflowPage() {
                         <h4 className="text-xl font-bold mb-2">Drop your video here</h4>
                         <p className="text-muted-foreground mb-4">or click to browse (MP4, WebM - max 500MB)</p>
                       </label>
-                      {uploadedFile && (
-                        <div className="mt-4 p-4 bg-muted/10 border border-[var(--neon-cyan)]/50 rounded">
-                          <p className="font-mono text-sm text-[var(--neon-cyan)]">{uploadedFile.name}</p>
-                        </div>
+                      {uploadedFile && !isUploading && (
+                        <motion.div
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          className="mt-6 space-y-4"
+                        >
+                          <div className="p-4 bg-muted/10 border border-[var(--neon-cyan)]/50 rounded">
+                            <p className="font-mono text-sm text-[var(--neon-cyan)] mb-2">{uploadedFile.name}</p>
+                            <p className="text-xs text-muted-foreground">{(uploadedFile.size / 1024 / 1024).toFixed(2)} MB</p>
+                          </div>
+                          <Button
+                            onClick={handleUploadAndAnalyze}
+                            disabled={steps[WorkflowStep.ANALYZE].status === "loading"}
+                            className="w-full neon-border-cyan bg-[var(--neon-cyan)]/10 hover:bg-[var(--neon-cyan)]/20 text-[var(--neon-cyan)] font-bold py-6"
+                          >
+                            <Upload className="w-4 h-4 mr-2" />
+                            Upload & Analyze Video
+                          </Button>
+                        </motion.div>
+                      )}
+                      
+                      {isUploading && (
+                        <motion.div
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          className="mt-6 space-y-4"
+                        >
+                          <div className="p-4 bg-muted/10 border border-[var(--neon-cyan)]/50 rounded">
+                            <div className="flex items-center justify-between mb-2">
+                              <p className="font-mono text-sm text-[var(--neon-cyan)]">{uploadedFile?.name}</p>
+                              <span className="text-xs font-mono text-[var(--neon-cyan)]">{uploadProgress}%</span>
+                            </div>
+                            <div className="w-full h-2 bg-muted/30 rounded-full overflow-hidden">
+                              <motion.div
+                                className="h-full bg-gradient-to-r from-[var(--neon-cyan)] to-[var(--neon-magenta)]"
+                                initial={{ width: 0 }}
+                                animate={{ width: `${uploadProgress}%` }}
+                                transition={{ duration: 0.3 }}
+                              />
+                            </div>
+                            <div className="flex items-center gap-2 mt-3">
+                              <Loader2 className="w-4 h-4 text-[var(--neon-cyan)] animate-spin" />
+                              <p className="text-xs text-muted-foreground">
+                                {uploadProgress < 50 ? "Uploading video..." : 
+                                 uploadProgress < 90 ? "Processing video..." : 
+                                 "Analyzing video..."}
+                              </p>
+                            </div>
+                          </div>
+                        </motion.div>
                       )}
                     </motion.div>
 
@@ -345,34 +428,39 @@ export default function WorkflowPage() {
                     </div>
 
                     {steps[WorkflowStep.ANALYZE].status === "loading" && (
-                      <div className="space-y-4">
-                        {[
-                          { step: "Frame Extraction", progress: 100 },
-                          { step: "UI State Detection", progress: 100 },
-                          { step: "Interaction Mapping", progress: 85 },
-                          { step: "Timeline Building", progress: 45 }
-                        ].map((item, index) => (
-                          <motion.div
-                            key={index}
-                            initial={{ opacity: 0, x: -20 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            transition={{ delay: index * 0.1 }}
-                            className="space-y-2"
-                          >
-                            <div className="flex items-center justify-between">
-                              <span className="font-mono text-sm">{item.step}</span>
-                              <span className="text-xs text-muted-foreground">{item.progress}%</span>
-                            </div>
-                            <div className="h-2 bg-muted/30 border border-border/30 overflow-hidden rounded">
+                      <div className="p-12 text-center">
+                        <div className="space-y-4">
+                          <Loader2 className="w-16 h-16 mx-auto text-[var(--neon-magenta)] animate-spin" />
+                          <p className="text-muted-foreground mb-4">Analyzing video...</p>
+                          <div className="max-w-md mx-auto space-y-3">
+                            {[
+                              { step: "Extracting frames", progress: 30 },
+                              { step: "Detecting UI changes", progress: 60 },
+                              { step: "Building timeline", progress: 90 }
+                            ].map((item, index) => (
                               <motion.div
-                                className="h-full bg-gradient-to-r from-[var(--neon-magenta)] to-[var(--neon-cyan)]"
-                                initial={{ width: 0 }}
-                                animate={{ width: `${item.progress}%` }}
-                                transition={{ duration: 1, delay: index * 0.2 }}
-                              />
-                            </div>
-                          </motion.div>
-                        ))}
+                                key={index}
+                                initial={{ opacity: 0, x: -20 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                transition={{ delay: index * 0.1 }}
+                                className="space-y-2"
+                              >
+                                <div className="flex items-center justify-between">
+                                  <span className="font-mono text-sm text-foreground">{item.step}</span>
+                                  <span className="text-xs font-mono text-[var(--neon-magenta)]">{item.progress}%</span>
+                                </div>
+                                <div className="h-2 bg-muted/30 border border-border/30 overflow-hidden rounded">
+                                  <motion.div
+                                    className="h-full bg-gradient-to-r from-[var(--neon-magenta)] to-[var(--neon-cyan)]"
+                                    initial={{ width: 0 }}
+                                    animate={{ width: `${item.progress}%` }}
+                                    transition={{ duration: 1, delay: index * 0.2 }}
+                                  />
+                                </div>
+                              </motion.div>
+                            ))}
+                          </div>
+                        </div>
                       </div>
                     )}
 
@@ -382,7 +470,7 @@ export default function WorkflowPage() {
                           <AlertCircle className="w-5 h-5 text-destructive" />
                           <h4 className="font-bold text-destructive">Analysis Failed</h4>
                         </div>
-                        <p className="text-sm text-muted-foreground mb-4">{steps[WorkflowStep.ANALYZE].error}</p>
+                        <p className="text-sm text-muted-foreground mb-4 break-words overflow-wrap-anywhere">{steps[WorkflowStep.ANALYZE].error}</p>
                         <Button
                           onClick={() => retry(WorkflowStep.ANALYZE)}
                           className="neon-border-magenta bg-[var(--neon-magenta)]/10 hover:bg-[var(--neon-magenta)]/20 text-[var(--neon-magenta)]"
@@ -505,7 +593,7 @@ export default function WorkflowPage() {
                           <AlertCircle className="w-5 h-5 text-destructive" />
                           <h4 className="font-bold text-destructive">Test Generation Failed</h4>
                         </div>
-                        <p className="text-sm text-muted-foreground mb-4">{steps[WorkflowStep.TEST].error}</p>
+                        <p className="text-sm text-muted-foreground mb-4 break-words overflow-wrap-anywhere">{steps[WorkflowStep.TEST].error}</p>
                         <Button
                           onClick={() => retry(WorkflowStep.TEST)}
                           className="neon-border-lime bg-[var(--neon-lime)]/10 hover:bg-[var(--neon-lime)]/20 text-[var(--neon-lime)]"
@@ -517,8 +605,38 @@ export default function WorkflowPage() {
 
                     {steps[WorkflowStep.TEST].status === "loading" && (
                       <div className="p-12 text-center">
-                        <Loader2 className="w-16 h-16 mx-auto mb-4 text-[var(--neon-lime)] animate-spin" />
-                        <p className="text-muted-foreground">Generating Playwright test...</p>
+                        <div className="space-y-4">
+                          <Loader2 className="w-16 h-16 mx-auto text-[var(--neon-lime)] animate-spin" />
+                          <p className="text-muted-foreground mb-4">Generating Playwright test...</p>
+                          <div className="max-w-md mx-auto space-y-3">
+                            {[
+                              { step: "Analyzing reproduction steps", progress: 40 },
+                              { step: "Writing test code", progress: 75 },
+                              { step: "Validating syntax", progress: 100 }
+                            ].map((item, index) => (
+                              <motion.div
+                                key={index}
+                                initial={{ opacity: 0, x: -20 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                transition={{ delay: index * 0.1 }}
+                                className="space-y-2"
+                              >
+                                <div className="flex items-center justify-between">
+                                  <span className="font-mono text-sm text-foreground">{item.step}</span>
+                                  <span className="text-xs font-mono text-[var(--neon-lime)]">{item.progress}%</span>
+                                </div>
+                                <div className="h-2 bg-muted/30 border border-border/30 overflow-hidden rounded">
+                                  <motion.div
+                                    className="h-full bg-gradient-to-r from-[var(--neon-lime)] to-[var(--neon-cyan)]"
+                                    initial={{ width: 0 }}
+                                    animate={{ width: `${item.progress}%` }}
+                                    transition={{ duration: 1, delay: index * 0.2 }}
+                                  />
+                                </div>
+                              </motion.div>
+                            ))}
+                          </div>
+                        </div>
                       </div>
                     )}
 
@@ -603,8 +721,38 @@ export default function WorkflowPage() {
 
                     {steps[WorkflowStep.RUN].status === "loading" && (
                       <div className="p-12 text-center">
-                        <Loader2 className="w-16 h-16 mx-auto mb-4 text-[var(--neon-cyan)] animate-spin" />
-                        <p className="text-muted-foreground">Running Playwright test...</p>
+                        <div className="space-y-4">
+                          <Loader2 className="w-16 h-16 mx-auto text-[var(--neon-cyan)] animate-spin" />
+                          <p className="text-muted-foreground mb-4">Running Playwright test...</p>
+                          <div className="max-w-md mx-auto space-y-3">
+                            {[
+                              { step: "Starting browser", progress: 25 },
+                              { step: "Executing test", progress: 60 },
+                              { step: "Capturing results", progress: 100 }
+                            ].map((item, index) => (
+                              <motion.div
+                                key={index}
+                                initial={{ opacity: 0, x: -20 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                transition={{ delay: index * 0.1 }}
+                                className="space-y-2"
+                              >
+                                <div className="flex items-center justify-between">
+                                  <span className="font-mono text-sm text-foreground">{item.step}</span>
+                                  <span className="text-xs font-mono text-[var(--neon-cyan)]">{item.progress}%</span>
+                                </div>
+                                <div className="h-2 bg-muted/30 border border-border/30 overflow-hidden rounded">
+                                  <motion.div
+                                    className="h-full bg-gradient-to-r from-[var(--neon-cyan)] to-[var(--neon-magenta)]"
+                                    initial={{ width: 0 }}
+                                    animate={{ width: `${item.progress}%` }}
+                                    transition={{ duration: 1, delay: index * 0.2 }}
+                                  />
+                                </div>
+                              </motion.div>
+                            ))}
+                          </div>
+                        </div>
                       </div>
                     )}
 
@@ -614,7 +762,7 @@ export default function WorkflowPage() {
                           <AlertCircle className="w-5 h-5 text-destructive" />
                           <h4 className="font-bold text-destructive">Test Execution Failed</h4>
                         </div>
-                        <p className="text-sm text-muted-foreground mb-4">{steps[WorkflowStep.RUN].error}</p>
+                        <p className="text-sm text-muted-foreground mb-4 break-words overflow-wrap-anywhere">{steps[WorkflowStep.RUN].error}</p>
                         <Button
                           onClick={() => retry(WorkflowStep.RUN)}
                           className="neon-border-cyan bg-[var(--neon-cyan)]/10 hover:bg-[var(--neon-cyan)]/20 text-[var(--neon-cyan)]"
@@ -662,8 +810,8 @@ export default function WorkflowPage() {
                             <div className="space-y-3 text-sm font-mono">
                               <div className="flex justify-between">
                                 <span className="text-muted-foreground">Result:</span>
-                                <span className={data.runResult.status === "failed" ? "text-[var(--neon-magenta)]" : "text-[var(--neon-lime)]"}>
-                                  {data.runResult.status.toUpperCase()}
+                                <span className={data.runResult.status === "failed" ? "text-[var(--neon-lime)]" : "text-[var(--neon-magenta)]"}>
+                                  {data.runResult.status === "failed" ? "DETECTED" : data.runResult.status === "success" ? "NOT DETECTED" : String(data.runResult.status).toUpperCase()}
                                 </span>
                               </div>
                               {data.runResult.stderr && (
@@ -706,7 +854,14 @@ export default function WorkflowPage() {
                             <h4 className="text-lg font-bold mb-4 text-[var(--neon-cyan)]" style={{ fontFamily: 'var(--font-display)' }}>
                               SCREENSHOT
                             </h4>
-                            <img src={data.runResult.screenshotUrl} alt="Test result screenshot" className="max-w-full rounded border border-border/30" />
+                            <div className="relative w-full h-64">
+                              <Image
+                                src={data.runResult.screenshotUrl}
+                                alt="Test result screenshot"
+                                fill
+                                className="object-contain rounded border border-border/30"
+                              />
+                            </div>
                           </div>
                         )}
 
@@ -767,8 +922,38 @@ export default function WorkflowPage() {
 
                     {steps[WorkflowStep.PATCH].status === "loading" && (
                       <div className="p-12 text-center">
-                        <Loader2 className="w-16 h-16 mx-auto mb-4 text-[var(--neon-lime)] animate-spin" />
-                        <p className="text-muted-foreground">Analyzing error and generating fix...</p>
+                        <div className="space-y-4">
+                          <Loader2 className="w-16 h-16 mx-auto text-[var(--neon-lime)] animate-spin" />
+                          <p className="text-muted-foreground mb-4">Analyzing error and generating fix...</p>
+                          <div className="max-w-md mx-auto space-y-3">
+                            {[
+                              { step: "Analyzing test failure", progress: 35 },
+                              { step: "Identifying root cause", progress: 70 },
+                              { step: "Generating patch", progress: 100 }
+                            ].map((item, index) => (
+                              <motion.div
+                                key={index}
+                                initial={{ opacity: 0, x: -20 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                transition={{ delay: index * 0.1 }}
+                                className="space-y-2"
+                              >
+                                <div className="flex items-center justify-between">
+                                  <span className="font-mono text-sm text-foreground">{item.step}</span>
+                                  <span className="text-xs font-mono text-[var(--neon-lime)]">{item.progress}%</span>
+                                </div>
+                                <div className="h-2 bg-muted/30 border border-border/30 overflow-hidden rounded">
+                                  <motion.div
+                                    className="h-full bg-gradient-to-r from-[var(--neon-lime)] to-[var(--neon-cyan)]"
+                                    initial={{ width: 0 }}
+                                    animate={{ width: `${item.progress}%` }}
+                                    transition={{ duration: 1, delay: index * 0.2 }}
+                                  />
+                                </div>
+                              </motion.div>
+                            ))}
+                          </div>
+                        </div>
                       </div>
                     )}
 
@@ -778,7 +963,7 @@ export default function WorkflowPage() {
                           <AlertCircle className="w-5 h-5 text-destructive" />
                           <h4 className="font-bold text-destructive">Patch Generation Failed</h4>
                         </div>
-                        <p className="text-sm text-muted-foreground mb-4">{steps[WorkflowStep.PATCH].error}</p>
+                        <p className="text-sm text-muted-foreground mb-4 break-words overflow-wrap-anywhere">{steps[WorkflowStep.PATCH].error}</p>
                         <Button
                           onClick={() => retry(WorkflowStep.PATCH)}
                           className="neon-border-lime bg-[var(--neon-lime)]/10 hover:bg-[var(--neon-lime)]/20 text-[var(--neon-lime)]"
@@ -921,8 +1106,38 @@ export default function WorkflowPage() {
 
                     {steps[WorkflowStep.EXPORT].status === "loading" && (
                       <div className="p-12 text-center">
-                        <Loader2 className="w-16 h-16 mx-auto mb-4 text-[var(--neon-cyan)] animate-spin" />
-                        <p className="text-muted-foreground">Generating markdown report...</p>
+                        <div className="space-y-4">
+                          <Loader2 className="w-16 h-16 mx-auto text-[var(--neon-cyan)] animate-spin" />
+                          <p className="text-muted-foreground mb-4">Generating markdown report...</p>
+                          <div className="max-w-md mx-auto space-y-3">
+                            {[
+                              { step: "Compiling analysis", progress: 40 },
+                              { step: "Formatting report", progress: 75 },
+                              { step: "Finalizing export", progress: 100 }
+                            ].map((item, index) => (
+                              <motion.div
+                                key={index}
+                                initial={{ opacity: 0, x: -20 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                transition={{ delay: index * 0.1 }}
+                                className="space-y-2"
+                              >
+                                <div className="flex items-center justify-between">
+                                  <span className="font-mono text-sm text-foreground">{item.step}</span>
+                                  <span className="text-xs font-mono text-[var(--neon-cyan)]">{item.progress}%</span>
+                                </div>
+                                <div className="h-2 bg-muted/30 border border-border/30 overflow-hidden rounded">
+                                  <motion.div
+                                    className="h-full bg-gradient-to-r from-[var(--neon-cyan)] to-[var(--neon-magenta)]"
+                                    initial={{ width: 0 }}
+                                    animate={{ width: `${item.progress}%` }}
+                                    transition={{ duration: 1, delay: index * 0.2 }}
+                                  />
+                                </div>
+                              </motion.div>
+                            ))}
+                          </div>
+                        </div>
                       </div>
                     )}
 
@@ -932,7 +1147,7 @@ export default function WorkflowPage() {
                           <AlertCircle className="w-5 h-5 text-destructive" />
                           <h4 className="font-bold text-destructive">Export Failed</h4>
                         </div>
-                        <p className="text-sm text-muted-foreground mb-4">{steps[WorkflowStep.EXPORT].error}</p>
+                        <p className="text-sm text-muted-foreground mb-4 break-words overflow-wrap-anywhere">{steps[WorkflowStep.EXPORT].error}</p>
                         <Button
                           onClick={() => retry(WorkflowStep.EXPORT)}
                           className="neon-border-cyan bg-[var(--neon-cyan)]/10 hover:bg-[var(--neon-cyan)]/20 text-[var(--neon-cyan)]"
@@ -944,9 +1159,29 @@ export default function WorkflowPage() {
 
                     {steps[WorkflowStep.EXPORT].status === "success" && data.bugReport && (
                       <>
-                        <div className="p-6 bg-slate-950 border border-slate-700 rounded-lg font-mono text-sm max-h-96 overflow-y-auto">
-                          <pre className="text-slate-300 whitespace-pre-wrap">{data.bugReport.markdown}</pre>
-                        </div>
+                        {/* Tabs for Preview and Raw */}
+                        <Tabs defaultValue="preview" className="w-full">
+                          <TabsList className="grid w-full grid-cols-2 mb-4 bg-muted/20 p-1 border border-border/30">
+                            <TabsTrigger value="preview" className="data-[state=active]:bg-[var(--neon-cyan)]/20 data-[state=active]:text-[var(--neon-cyan)]">
+                              Preview
+                            </TabsTrigger>
+                            <TabsTrigger value="raw" className="data-[state=active]:bg-[var(--neon-cyan)]/20 data-[state=active]:text-[var(--neon-cyan)]">
+                              Raw Markdown
+                            </TabsTrigger>
+                          </TabsList>
+                          
+                          <TabsContent value="preview" className="mt-0">
+                            <div className="p-6 bg-card/50 border border-border/50 rounded-lg max-h-[600px] overflow-y-auto">
+                              <MarkdownPreview content={data.bugReport.markdown} />
+                            </div>
+                          </TabsContent>
+                          
+                          <TabsContent value="raw" className="mt-0">
+                            <div className="p-6 bg-slate-950 border border-slate-700 rounded-lg font-mono text-sm max-h-[600px] overflow-y-auto">
+                              <pre className="text-slate-300 whitespace-pre-wrap break-words">{data.bugReport.markdown}</pre>
+                            </div>
+                          </TabsContent>
+                        </Tabs>
 
                         <div className="flex flex-col sm:flex-row gap-4">
                           <Button
@@ -1033,11 +1268,11 @@ export default function WorkflowPage() {
                       <div className="space-y-4 text-xs font-mono">
                         {/* Last Call Summary */}
                         <div className="p-4 bg-muted/10 border border-border/30 rounded">
-                          <div className="flex items-center justify-between mb-2">
-                            <span className="text-[var(--neon-cyan)] font-bold">
+                          <div className="flex items-center justify-between mb-2 gap-2 flex-wrap">
+                            <span className="text-[var(--neon-cyan)] font-bold break-all">
                               {lastApiCall.method} {lastApiCall.endpoint}
                             </span>
-                            <span className="text-muted-foreground">
+                            <span className="text-muted-foreground text-xs whitespace-nowrap">
                               {lastApiCall.timestamp}
                             </span>
                           </div>
@@ -1047,8 +1282,9 @@ export default function WorkflowPage() {
                             </div>
                           )}
                           {lastApiCall.error && (
-                            <div className="mt-2 text-[var(--neon-magenta)]">
-                              Error: {lastApiCall.error.message}
+                            <div className="mt-2 text-[var(--neon-magenta)] break-words overflow-wrap-anywhere">
+                              <span className="font-semibold">Error:</span>{" "}
+                              <span className="break-all">{lastApiCall.error.message}</span>
                             </div>
                           )}
                         </div>
@@ -1057,12 +1293,12 @@ export default function WorkflowPage() {
                         {lastApiCall.requestPayload !== undefined && lastApiCall.requestPayload !== null && (
                           <div>
                             <h4 className="text-sm font-bold mb-2 text-[var(--neon-cyan)]">Request Payload</h4>
-                            <div className="p-3 bg-slate-950 border border-slate-700 rounded text-xs max-h-32 overflow-y-auto">
-                              <pre className="text-slate-300">
+                            <div className="p-3 bg-slate-950 border border-slate-700 rounded text-xs max-h-48 overflow-y-auto overflow-x-auto">
+                              <pre className="text-slate-300 whitespace-pre-wrap break-words overflow-wrap-anywhere">
                                 {(() => {
                                   try {
                                     const jsonStr = String(JSON.stringify(lastApiCall.requestPayload, null, 2));
-                                    return jsonStr.substring(0, 500) + (jsonStr.length > 500 ? "..." : "");
+                                    return jsonStr.length > 2000 ? jsonStr.substring(0, 2000) + "\n\n... (truncated)" : jsonStr;
                                   } catch {
                                     return String(lastApiCall.requestPayload);
                                   }
@@ -1081,12 +1317,12 @@ export default function WorkflowPage() {
                         {lastApiCall.response !== undefined && lastApiCall.response !== null && (
                           <div>
                             <h4 className="text-sm font-bold mb-2 text-[var(--neon-lime)]">Response</h4>
-                            <div className="p-3 bg-slate-950 border border-slate-700 rounded text-xs max-h-48 overflow-y-auto">
-                              <pre className="text-slate-300">
+                            <div className="p-3 bg-slate-950 border border-slate-700 rounded text-xs max-h-64 overflow-y-auto overflow-x-auto">
+                              <pre className="text-slate-300 whitespace-pre-wrap break-words overflow-wrap-anywhere">
                                 {(() => {
                                   try {
                                     const jsonStr = String(JSON.stringify(lastApiCall.response, null, 2));
-                                    return jsonStr.substring(0, 1000) + (jsonStr.length > 1000 ? "..." : "");
+                                    return jsonStr.length > 3000 ? jsonStr.substring(0, 3000) + "\n\n... (truncated)" : jsonStr;
                                   } catch {
                                     return String(lastApiCall.response);
                                   }
@@ -1113,25 +1349,28 @@ export default function WorkflowPage() {
                                     {lastApiCall.error instanceof BackendError ? lastApiCall.error.status || "N/A" : "N/A"}
                                   </span>
                                 </div>
-                                <div>
+                                <div className="break-words">
                                   <span className="text-muted-foreground">Message:</span>{" "}
-                                  <span className="text-[var(--neon-magenta)]">
+                                  <span className="text-[var(--neon-magenta)] break-all overflow-wrap-anywhere">
                                     {lastApiCall.error.message}
                                   </span>
                                 </div>
                                 {lastApiCall.error instanceof BackendError && lastApiCall.error.details !== undefined && lastApiCall.error.details !== null && (
                                   <div className="mt-2">
                                     <span className="text-muted-foreground">Details:</span>
-                                    <pre className="text-slate-300 mt-1">
-                                      {(() => {
-                                        try {
-                                          const jsonStr = String(JSON.stringify(lastApiCall.error.details, null, 2));
-                                          return jsonStr.substring(0, 500) + (jsonStr.length > 500 ? "..." : "");
-                                        } catch {
-                                          return String(lastApiCall.error.details);
-                                        }
-                                      })()}
-                                    </pre>
+                                    <div className="mt-1 max-h-64 overflow-y-auto overflow-x-auto">
+                                      <pre className="text-slate-300 whitespace-pre-wrap break-words overflow-wrap-anywhere">
+                                        {(() => {
+                                          try {
+                                            const jsonStr = String(JSON.stringify(lastApiCall.error.details, null, 2));
+                                            return jsonStr.length > 2000 ? jsonStr.substring(0, 2000) + "\n\n... (truncated)" : jsonStr;
+                                          } catch {
+                                            const detailsStr = String(lastApiCall.error.details);
+                                            return detailsStr.length > 2000 ? detailsStr.substring(0, 2000) + "... (truncated)" : detailsStr;
+                                          }
+                                        })()}
+                                      </pre>
+                                    </div>
                                   </div>
                                 )}
                               </div>
@@ -1151,6 +1390,9 @@ export default function WorkflowPage() {
           )}
         </div>
       </section>
+      
+      {/* Footer */}
+      <Footer />
     </div>
   );
 }

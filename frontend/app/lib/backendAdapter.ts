@@ -169,7 +169,9 @@ export class SampleAdapter implements BackendAdapter {
 
    
   async generateTest(
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     _analysis: AnalysisResult,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     _targetUrl?: string
   ): Promise<GeneratedTest> {
     await new Promise((resolve) => setTimeout(resolve, 1200));

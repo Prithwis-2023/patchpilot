@@ -39,7 +39,7 @@ export default function RunOutputPanel({
         <div className="space-y-3">
           <div className="card rounded-md p-4" style={{ borderColor: "var(--danger)" }}>
             <p className="text-sm font-medium" style={{ color: "var(--danger)" }}>Error running test</p>
-            <p className="mt-1 text-sm" style={{ color: "var(--danger)" }}>{error}</p>
+            <p className="mt-1 text-sm break-words overflow-wrap-anywhere" style={{ color: "var(--danger)" }}>{error}</p>
           </div>
           {onRetry && (
             <button
@@ -53,7 +53,7 @@ export default function RunOutputPanel({
           {config.isDevelopment && (
             <details className="mt-2">
               <summary className="cursor-pointer text-xs" style={{ color: "var(--danger)" }}>Show technical details</summary>
-              <pre className="mt-2 overflow-x-auto rounded p-2 text-xs" style={{ backgroundColor: "var(--danger)", opacity: 0.1, color: "var(--danger)" }}>
+              <pre className="mt-2 overflow-x-auto overflow-y-auto max-h-48 rounded p-2 text-xs whitespace-pre-wrap break-words overflow-wrap-anywhere" style={{ backgroundColor: "var(--danger)", opacity: 0.1, color: "var(--danger)" }}>
                 {error}
               </pre>
             </details>
@@ -71,18 +71,18 @@ export default function RunOutputPanel({
               className="rounded-full px-3 py-1 text-sm font-medium"
               style={{
                 backgroundColor:
-                  status === "success"
+                  status === "failed"
                     ? "var(--success)"
-                    : status === "failed"
+                    : status === "success"
                       ? "var(--danger)"
                       : "var(--warning)",
                 color: "var(--surface-1)",
               }}
             >
-              {status === "success"
-                ? "✓ Passed"
-                : status === "failed"
-                  ? "✗ Failed"
+              {status === "failed"
+                ? "✓ DETECTED"
+                : status === "success"
+                  ? "✗ NOT DETECTED"
                   : "Running..."}
             </span>
             {(stdout || stderr) && (
@@ -100,16 +100,16 @@ export default function RunOutputPanel({
           {stdout && (
             <div>
               <h3 className="mb-2 text-sm font-semibold text-primary">Output:</h3>
-              <pre className="overflow-x-auto rounded-md p-4" style={{ backgroundColor: "var(--surface-3)" }}>
-                <code className="font-mono text-sm text-primary">{stdout}</code>
+              <pre className="overflow-x-auto overflow-y-auto max-h-64 rounded-md p-4 whitespace-pre-wrap break-words" style={{ backgroundColor: "var(--surface-3)" }}>
+                <code className="font-mono text-sm text-primary break-words overflow-wrap-anywhere">{stdout}</code>
               </pre>
             </div>
           )}
           {stderr && (
             <div>
               <h3 className="mb-2 text-sm font-semibold" style={{ color: "var(--danger)" }}>Errors:</h3>
-              <pre className="overflow-x-auto rounded-md p-4" style={{ backgroundColor: "var(--danger)", opacity: 0.1 }}>
-                <code className="font-mono text-sm" style={{ color: "var(--danger)" }}>{stderr}</code>
+              <pre className="overflow-x-auto overflow-y-auto max-h-64 rounded-md p-4 whitespace-pre-wrap break-words" style={{ backgroundColor: "var(--danger)", opacity: 0.1 }}>
+                <code className="font-mono text-sm break-words overflow-wrap-anywhere" style={{ color: "var(--danger)" }}>{stderr}</code>
               </pre>
             </div>
           )}
