@@ -306,7 +306,7 @@ def run_playwright_test(test_code: str) -> dict:
             
             # Try fallback: run without specific file (for debugging)
             print(f"[Playwright Runner] Attempting fallback: run all tests in directory")
-            fallback_cmd = [npx_path, "playwright", "test"]
+            fallback_cmd = [npx_path, "playwright", "test", "--reporter=json"]
             try:
                 fallback_result = subprocess.run(
                     fallback_cmd,
