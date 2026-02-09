@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 import Link from "next/link";
 import { 
   Github, Linkedin, ExternalLink, Cpu, ShieldCheck, 
-  Zap, Activity, Code2, Database, Layers 
+  Zap, Activity, Code2, Database, Layers, GlobeIcon 
 } from "lucide-react";
 
 const TechStat = ({ label, value, color }: { label: string; value: string; color: string }) => (
@@ -114,6 +114,15 @@ export default function Footer() {
                   <div className="flex gap-3">
                     <a href="https://github.com/Prithwis-2023" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-[var(--neon-magenta)] transition-colors"><Github className="w-4 h-4" /></a>
                     <a href="https://linkedin.com/in/prithwis-das/" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-[var(--neon-magenta)] transition-colors"><Linkedin className="w-4 h-4" /></a>
+                  </div>
+                </div>
+              </div>
+              <h4 className="text-[10px] font-bold text-[var(--neon-magenta)] tracking-[0.3em] uppercase font-display">UI/UX Reviewer</h4>
+              <div className="flex flex-col gap-8">
+              <div className="group">
+                  <p className="text-sm font-medium text-foreground group-hover:text-[var(--neon-magenta)] transition-colors mb-2">Yeram Lee</p>
+                  <div className="flex gap-3">
+                    <a href="https://devpost.com/yeram" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-[var(--neon-magenta)] transition-colors"><GlobeIcon className="w-4 h-4" /></a>
                   </div>
                 </div>
               </div>
