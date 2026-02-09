@@ -59,13 +59,23 @@ GOOGLE_API_KEY=your-gemini-api-key-here
 
 # Backend port (use 8001 since 8000 is busy)
 PORT=8001
+
+# CORS Allowed Origins (comma or space-separated)
+# Add your frontend URL(s) here, e.g.:
+# CORS_ALLOWED_ORIGINS=https://patchpilot-frontend.vercel.app,https://your-domain.com
+# Localhost URLs are included by default for development
 EOF
-    echo -e "${GREEN}✓ Created .env file. Please edit it and add your GOOGLE_API_KEY${NC}"
+    echo -e "${GREEN}✓ Created .env file. Please edit it and add:${NC}"
+    echo -e "   - GOOGLE_API_KEY"
+    echo -e "   - CORS_ALLOWED_ORIGINS (your frontend URL)"
 else
     echo -e "${GREEN}✓ .env file already exists${NC}"
 fi
 
 echo -e "${YELLOW}Step 6: Creating systemd service...${NC}"
+# Make startup script executable
+chmod +x "$BACKEND_DIR/start.sh"
+
 cat > /etc/systemd/system/patchpilot-backend.service << EOF
 [Unit]
 Description=PatchPilot Backend API
@@ -76,7 +86,11 @@ Type=simple
 User=root
 WorkingDirectory=$BACKEND_DIR
 Environment="PATH=$BACKEND_DIR/venv/bin:/usr/local/bin:/usr/bin:/bin"
-ExecStart=$BACKEND_DIR/venv/bin/uvicorn app:app --host 0.0.0.0 --port 8001
+# Environment variables can be set here or loaded from .env file
+# Environment="GOOGLE_API_KEY=your-key"
+# Environment="PORT=8001"
+# Environment="CORS_ALLOWED_ORIGINS=https://your-frontend.vercel.app"
+ExecStart=$BACKEND_DIR/start.sh
 Restart=always
 RestartSec=10
 
@@ -95,9 +109,10 @@ if systemctl is-active --quiet patchpilot-backend; then
     echo -e "${GREEN}✓ Service is running!${NC}"
     echo ""
     echo "📋 Next steps:"
-    echo "1. Edit $BACKEND_DIR/.env and add your GOOGLE_API_KEY"
-    echo "2. Edit $BACKEND_DIR/app.py and add your frontend URL to CORS allow_origins"
-    echo "3. Restart service: sudo systemctl restart patchpilot-backend"
+    echo "1. Edit $BACKEND_DIR/.env and add:"
+    echo "   - GOOGLE_API_KEY=your-api-key"
+    echo "   - CORS_ALLOWED_ORIGINS=https://your-frontend-url.vercel.app"
+    echo "2. Restart service: sudo systemctl restart patchpilot-backend"
     echo "4. Check logs: sudo journalctl -u patchpilot-backend -f"
     echo "5. Test: curl http://localhost:8001/health"
     echo ""

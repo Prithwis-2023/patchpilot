@@ -32,6 +32,7 @@ npx playwright install chromium
 cat > .env << EOF
 GOOGLE_API_KEY=your-api-key-here
 PORT=8001
+CORS_ALLOWED_ORIGINS=https://patchpilot-frontend-beta.vercel.app
 EOF
 
 # 5. Create systemd service

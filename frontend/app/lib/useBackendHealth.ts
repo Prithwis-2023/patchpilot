@@ -36,10 +36,9 @@ export function useBackendHealth(pipelineMode: "sample" | "backend") {
     }));
 
     try {
-      // Try /docs first (FastAPI Swagger UI), then /openapi.json
+      // Use /health endpoint (simpler and doesn't require CORS for docs)
       const endpoints = [
-        `${config.backendUrl}/docs`,
-        `${config.backendUrl}/openapi.json`,
+        `${config.backendUrl}/health`,
       ];
 
       let connected = false;

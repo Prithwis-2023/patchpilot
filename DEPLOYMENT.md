@@ -153,32 +153,34 @@ Add your environment variables:
 # Gemini API Key (get from https://aistudio.google.com/apikey)
 GOOGLE_API_KEY=your-gemini-api-key-here
 
-# Optional: Set port (default 8000, but use 8001 since 8000 is busy)
+# Backend port (default 8000, but use 8001 since 8000 is busy)
 PORT=8001
+
+# CORS Allowed Origins (comma or space-separated)
+# Include your frontend URL(s) here
+CORS_ALLOWED_ORIGINS=https://patchpilot-frontend.vercel.app,https://your-custom-domain.com
+
+# Optional: Upload directory (default: temp)
+# UPLOAD_DIR=temp
 ```
 
 Save: `Ctrl+X`, then `Y`, then `Enter`
 
-### Step 6: Update CORS in `app.py`
+### Step 6: Configure CORS via Environment Variables
 
-Edit `/var/www/Patchpilot/backend/app.py`:
+**No need to edit `app.py` anymore!** CORS origins are now read from environment variables.
 
-```python
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=[
-        "http://localhost:3000",
-        "http://localhost:3001",
-        "https://patchpilot-frontend.vercel.app",  # Add your Vercel URL
-        "https://your-custom-domain.com",  # Add custom domain if you have one
-        # Add your VPS domain if frontend is also on VPS
-    ],
-    allow_credentials=True,
-    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allow_headers=["*"],
-    expose_headers=["*"],
-)
+Add to your `.env` file:
+```env
+CORS_ALLOWED_ORIGINS=https://patchpilot-frontend.vercel.app,https://your-custom-domain.com
 ```
+
+Or if frontend is also on VPS:
+```env
+CORS_ALLOWED_ORIGINS=http://your-vps-domain.com:3002,https://your-custom-domain.com
+```
+
+**Note:** Localhost origins are included by default for development. You only need to add production URLs.
 
 ### Step 7: Create Systemd Service (Recommended)
 
@@ -197,13 +199,25 @@ Type=simple
 User=root
 WorkingDirectory=/var/www/Patchpilot/backend
 Environment="PATH=/var/www/Patchpilot/backend/venv/bin:/usr/local/bin:/usr/bin:/bin"
-ExecStart=/var/www/Patchpilot/backend/venv/bin/uvicorn app:app --host 0.0.0.0 --port 8001
+# Environment variables can be set here or loaded from .env file
+# Option 1: Set in systemd (recommended for production)
+# Environment="GOOGLE_API_KEY=your-key"
+# Environment="PORT=8001"
+# Environment="CORS_ALLOWED_ORIGINS=https://your-frontend.vercel.app"
+# Option 2: Use .env file (python-dotenv will load it automatically)
+ExecStart=/var/www/Patchpilot/backend/start.sh
 Restart=always
 RestartSec=10
 
 [Install]
 WantedBy=multi-user.target
 ```
+
+**Note:** 
+- The `start.sh` script reads `PORT` from environment (defaults to 8000)
+- Make sure `start.sh` is executable: `chmod +x /var/www/Patchpilot/backend/start.sh`
+- Environment variables can be set in systemd service file OR in `.env` file
+- System environment variables take precedence over `.env` file
 
 Save and enable:
 ```bash

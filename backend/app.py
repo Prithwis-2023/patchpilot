@@ -14,19 +14,37 @@ load_dotenv()
 
 app = FastAPI()
 
-# CORS middleware - MUST be added before routes
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=[
+# CORS allowed origins - read from environment variable
+# Format: comma-separated or space-separated URLs
+# Example: CORS_ALLOWED_ORIGINS="http://localhost:3000,https://example.com"
+# Default: localhost URLs for development
+def get_cors_origins():
+    """Get CORS allowed origins from environment or use defaults."""
+    env_origins = os.getenv("CORS_ALLOWED_ORIGINS", "").strip()
+    
+    # Default origins for local development
+    default_origins = [
         "http://localhost:3000",
         "http://localhost:3001",
         "http://127.0.0.1:3000",
         "http://127.0.0.1:3001",
-        # Production URLs - update these with your actual deployment URLs
-        # "https://patchpilot-frontend.vercel.app",
-        # "https://your-custom-domain.com",
-        # Add your Vercel URL or custom domain here
-    ],
+    ]
+    
+    if not env_origins:
+        return default_origins
+    
+    # Parse comma or space-separated origins
+    origins = [origin.strip() for origin in env_origins.replace(",", " ").split() if origin.strip()]
+    
+    # Combine with defaults (avoid duplicates)
+    all_origins = list(set(default_origins + origins))
+    
+    return all_origins
+
+# CORS middleware - MUST be added before routes
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=get_cors_origins(),
     allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allow_headers=["*"],
@@ -48,8 +66,12 @@ async def global_exception_handler(request: Request, exc: Exception):
         }
     )
 
-UPLOAD_DIR = "temp"
+# Upload directory - can be overridden via env
+UPLOAD_DIR = os.getenv("UPLOAD_DIR", "temp")
 os.makedirs(UPLOAD_DIR, exist_ok=True)
+
+# Backend port - read from env or use default
+BACKEND_PORT = int(os.getenv("PORT", "8000"))
 
 @app.get("/health")
 async def health():
