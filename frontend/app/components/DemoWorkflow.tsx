@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Card } from "@/app/components/ui/card";
-import { Upload, CheckCircle2, Loader2, Code2, Play, Terminal, FileDiff, FileText,  Video } from "lucide-react";
+import { Upload, CheckCircle2, Loader2, Code2, Play, Terminal, FileDiff, FileText, Video } from "lucide-react";
 import SyntaxHighlightedCode from "./SyntaxHighlightedCode";
 import DiffViewer from "./DiffViewer";
 
@@ -151,11 +151,11 @@ export default function DemoWorkflow() {
 
   const config = stepConfigs[currentStep];
   const colorClass = config.color === "cyan" ? "text-[var(--neon-cyan)]" :
-                     config.color === "magenta" ? "text-[var(--neon-magenta)]" :
-                     "text-[var(--neon-lime)]";
+    config.color === "magenta" ? "text-[var(--neon-magenta)]" :
+      "text-[var(--neon-lime)]";
   const borderClass = config.color === "cyan" ? "neon-border-cyan" :
-                      config.color === "magenta" ? "neon-border-magenta" :
-                      "neon-border-lime";
+    config.color === "magenta" ? "neon-border-magenta" :
+      "neon-border-lime";
 
   const steps: WorkflowStep[] = ["upload", "analyze", "test", "run", "patch", "export"];
 
@@ -165,21 +165,19 @@ export default function DemoWorkflow() {
       <div className="flex items-center justify-center gap-4 mb-6">
         <button
           onClick={() => setActiveSlide("demo")}
-          className={`px-6 py-3 rounded-lg border-2 font-bold font-mono text-sm transition-all ${
-            activeSlide === "demo"
+          className={`px-6 py-3 rounded-lg border-2 font-bold font-mono text-sm transition-all ${activeSlide === "demo"
               ? "bg-[var(--neon-cyan)]/20 border-[var(--neon-cyan)] text-[var(--neon-cyan)] shadow-[0_0_15px_rgba(0,255,255,0.3)]"
               : "bg-muted/10 border-border/30 text-muted-foreground hover:border-[var(--neon-cyan)]/50"
-          }`}
+            }`}
         >
           Interactive Demo
         </button>
         <button
           onClick={() => setActiveSlide("video")}
-          className={`px-6 py-3 rounded-lg border-2 font-bold font-mono text-sm transition-all ${
-            activeSlide === "video"
+          className={`px-6 py-3 rounded-lg border-2 font-bold font-mono text-sm transition-all ${activeSlide === "video"
               ? "bg-[var(--neon-cyan)]/20 border-[var(--neon-cyan)] text-[var(--neon-cyan)] shadow-[0_0_15px_rgba(0,255,255,0.3)]"
               : "bg-muted/10 border-border/30 text-muted-foreground hover:border-[var(--neon-cyan)]/50"
-          }`}
+            }`}
         >
           <Video className="w-4 h-4 inline mr-2" />
           Video Demo
@@ -198,134 +196,132 @@ export default function DemoWorkflow() {
           >
             {/* Two-Panel Layout */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Left: Stepper */}
-        <Card className={`p-6 bg-card/50 backdrop-blur-sm border-2 ${borderClass}`}>
-          <h3 className="text-xl font-bold mb-6 text-[var(--neon-cyan)]" style={{ fontFamily: 'var(--font-display)' }}>
-            WORKFLOW STEPS
-          </h3>
-          <div className="space-y-4">
-            {steps.map((step, index) => {
-              const stepConfig = stepConfigs[step];
-              const isActive = currentStep === step;
-              const isCompleted = steps.indexOf(currentStep) > index;
-              const StepIcon = stepConfig.icon;
+              {/* Left: Stepper */}
+              <Card className={`p-6 bg-card/50 backdrop-blur-sm border-2 ${borderClass}`}>
+                <h3 className="text-xl font-bold mb-6 text-[var(--neon-cyan)]" style={{ fontFamily: 'var(--font-display)' }}>
+                  WORKFLOW STEPS
+                </h3>
+                <div className="space-y-4">
+                  {steps.map((step, index) => {
+                    const stepConfig = stepConfigs[step];
+                    const isActive = currentStep === step;
+                    const isCompleted = steps.indexOf(currentStep) > index;
+                    const StepIcon = stepConfig.icon;
 
-              return (
-                <motion.div
-                  key={step}
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: index * 0.1 }}
-                  className={`flex items-center gap-4 p-4 rounded-lg border-2 transition-all ${
-                    isActive
-                      ? `bg-[var(--neon-${stepConfig.color})]/10 border-[var(--neon-${stepConfig.color})]/50`
-                      : isCompleted
-                        ? "bg-muted/10 border-border/30"
-                        : "bg-transparent border-border/20"
-                  }`}
-                >
-                  <div className={`flex-shrink-0 w-10 h-10 rounded-full border-2 flex items-center justify-center ${
-                    isActive
-                      ? `border-[var(--neon-${stepConfig.color})] bg-[var(--neon-${stepConfig.color})]/20`
-                      : isCompleted
-                        ? "border-[var(--neon-cyan)] bg-[var(--neon-cyan)]/10"
-                        : "border-border/30"
-                  }`}>
-                    {isCompleted ? (
-                      <CheckCircle2 className="w-5 h-5 text-[var(--neon-cyan)]" />
+                    return (
+                      <motion.div
+                        key={step}
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: index * 0.1 }}
+                        className={`flex items-center gap-4 p-4 rounded-lg border-2 transition-all ${isActive
+                            ? `bg-[var(--neon-${stepConfig.color})]/10 border-[var(--neon-${stepConfig.color})]/50`
+                            : isCompleted
+                              ? "bg-muted/10 border-border/30"
+                              : "bg-transparent border-border/20"
+                          }`}
+                      >
+                        <div className={`flex-shrink-0 w-10 h-10 rounded-full border-2 flex items-center justify-center ${isActive
+                            ? `border-[var(--neon-${stepConfig.color})] bg-[var(--neon-${stepConfig.color})]/20`
+                            : isCompleted
+                              ? "border-[var(--neon-cyan)] bg-[var(--neon-cyan)]/10"
+                              : "border-border/30"
+                          }`}>
+                          {isCompleted ? (
+                            <CheckCircle2 className="w-5 h-5 text-[var(--neon-cyan)]" />
+                          ) : (
+                            <StepIcon className={`w-5 h-5 ${isActive
+                                ? `text-[var(--neon-${stepConfig.color})] ${isRunning && step !== "upload" && step !== "export" ? "animate-spin" : ""}`
+                                : "text-muted-foreground"
+                              }`} />
+                          )}
+                        </div>
+                        <div className="flex-1">
+                          <div className={`font-bold text-sm ${isActive ? colorClass : isCompleted ? "text-[var(--neon-cyan)]" : "text-muted-foreground"}`}>
+                            {stepConfig.label}
+                          </div>
+                          {isActive && (
+                            <div className="text-xs text-muted-foreground mt-1">
+                              {step === "upload" && "Uploading video recording..."}
+                              {step === "analyze" && "Extracting UI states and interactions..."}
+                              {step === "test" && "Generating Playwright test specification..."}
+                              {step === "run" && "Executing test and capturing results..."}
+                              {step === "patch" && "Analyzing failure and generating fix..."}
+                              {step === "export" && "Creating bug report markdown..."}
+                            </div>
+                          )}
+                        </div>
+                      </motion.div>
+                    );
+                  })}
+                </div>
+              </Card>
+
+              {/* Right: Artifact Viewer */}
+              <Card className={`p-6 bg-card/50 backdrop-blur-sm border-2 ${borderClass}`}>
+                <h3 className="text-xl font-bold mb-6 text-[var(--neon-cyan)]" style={{ fontFamily: 'var(--font-display)' }}>
+                  CODE ARTIFACT
+                </h3>
+                <div className="h-[400px] overflow-y-auto">
+                  <AnimatePresence mode="wait">
+                    {currentStep === "upload" ? (
+                      <motion.div
+                        key="upload"
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -20 }}
+                        className="flex items-center justify-center h-full text-muted-foreground"
+                      >
+                        <div className="text-center">
+                          <Upload className="w-16 h-16 mx-auto mb-4 text-[var(--neon-cyan)]" />
+                          <p className="text-sm">Upload a video to begin</p>
+                        </div>
+                      </motion.div>
+                    ) : config.artifactType === "code" ? (
+                      <motion.div
+                        key="code"
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -20 }}
+                      >
+                        <SyntaxHighlightedCode code={config.artifact} language="typescript" />
+                      </motion.div>
+                    ) : config.artifactType === "diff" ? (
+                      <motion.div
+                        key="diff"
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -20 }}
+                      >
+                        <DiffViewer diff={config.artifact} />
+                      </motion.div>
+                    ) : config.artifactType === "terminal" ? (
+                      <motion.pre
+                        key="terminal"
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -20 }}
+                        className="p-4 bg-slate-950 border border-slate-700 rounded-lg font-mono text-sm text-green-400 h-full overflow-y-auto"
+                      >
+                        {config.artifact}
+                      </motion.pre>
                     ) : (
-                      <StepIcon className={`w-5 h-5 ${
-                        isActive
-                          ? `text-[var(--neon-${stepConfig.color})] ${isRunning && step !== "upload" && step !== "export" ? "animate-spin" : ""}`
-                          : "text-muted-foreground"
-                      }`} />
+                      <motion.pre
+                        key={config.artifactType}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -20 }}
+                        className="p-4 bg-slate-950 border border-slate-700 rounded-lg font-mono text-sm text-gray-300 h-full overflow-y-auto whitespace-pre-wrap"
+                      >
+                        {config.artifact}
+                      </motion.pre>
                     )}
-                  </div>
-                  <div className="flex-1">
-                    <div className={`font-bold text-sm ${isActive ? colorClass : isCompleted ? "text-[var(--neon-cyan)]" : "text-muted-foreground"}`}>
-                      {stepConfig.label}
-                    </div>
-                    {isActive && (
-                      <div className="text-xs text-muted-foreground mt-1">
-                        {step === "upload" && "Uploading video recording..."}
-                        {step === "analyze" && "Extracting UI states and interactions..."}
-                        {step === "test" && "Generating Playwright test specification..."}
-                        {step === "run" && "Executing test and capturing results..."}
-                        {step === "patch" && "Analyzing failure and generating fix..."}
-                        {step === "export" && "Creating bug report markdown..."}
-                      </div>
-                    )}
-                  </div>
-                </motion.div>
-              );
-            })}
-          </div>
-        </Card>
+                  </AnimatePresence>
+                </div>
+              </Card>
+            </div>
 
-        {/* Right: Artifact Viewer */}
-        <Card className={`p-6 bg-card/50 backdrop-blur-sm border-2 ${borderClass}`}>
-          <h3 className="text-xl font-bold mb-6 text-[var(--neon-cyan)]" style={{ fontFamily: 'var(--font-display)' }}>
-            CODE ARTIFACT
-          </h3>
-          <div className="h-[400px] overflow-y-auto">
-            <AnimatePresence mode="wait">
-              {currentStep === "upload" ? (
-                <motion.div
-                  key="upload"
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -20 }}
-                  className="flex items-center justify-center h-full text-muted-foreground"
-                >
-                  <div className="text-center">
-                    <Upload className="w-16 h-16 mx-auto mb-4 text-[var(--neon-cyan)]" />
-                    <p className="text-sm">Upload a video to begin</p>
-                  </div>
-                </motion.div>
-              ) : config.artifactType === "code" ? (
-                <motion.div
-                  key="code"
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -20 }}
-                >
-                  <SyntaxHighlightedCode code={config.artifact} language="typescript" />
-                </motion.div>
-              ) : config.artifactType === "diff" ? (
-                <motion.div
-                  key="diff"
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -20 }}
-                >
-                  <DiffViewer diff={config.artifact} />
-                </motion.div>
-              ) : config.artifactType === "terminal" ? (
-                <motion.pre
-                  key="terminal"
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -20 }}
-                  className="p-4 bg-slate-950 border border-slate-700 rounded-lg font-mono text-sm text-green-400 h-full overflow-y-auto"
-                >
-                  {config.artifact}
-                </motion.pre>
-              ) : (
-                <motion.pre
-                  key={config.artifactType}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -20 }}
-                  className="p-4 bg-slate-950 border border-slate-700 rounded-lg font-mono text-sm text-gray-300 h-full overflow-y-auto whitespace-pre-wrap"
-                >
-                  {config.artifact}
-                </motion.pre>
-              )}
-            </AnimatePresence>
-          </div>
-        </Card>
-      </div>
-
+            <div className="h-4"></div> 
             {/* Controls */}
             <div className="flex justify-center">
               {!isRunning ? (

@@ -53,14 +53,61 @@ export default function CreatorSection() {
                     whileHover={{ scale: 1.1 }}
                     whileTap={{ scale: 0.9 }}
                   >
-                    <Button
-                      size="lg"
-                      className="neon-border-magenta bg-[var(--neon-magenta)]/10 hover:bg-[var(--neon-magenta)]/20 text-[var(--neon-magenta)] font-bold text-lg px-12 py-8 transition-all duration-300"
-                      style={{ fontFamily: 'var(--font-display)' }}
+                    <motion.button
+                      className="group relative px-8 py-4 bg-transparent overflow-hidden"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
                     >
-                      <Play className="w-8 h-8 mr-3" />
-                      WATCH VIDEO
-                    </Button>
+                      {/* Holographic Shutter Background */}
+                      <div className="absolute inset-0 bg-black/40 backdrop-blur-md border border-[var(--neon-magenta)]/20 group-hover:border-[var(--neon-magenta)]/60 transition-all duration-500" />
+
+                      {/* Animated Lens Flare / Scanning Line */}
+                      <motion.div
+                        className="absolute top-0 left-0 w-[2px] h-full bg-gradient-to-b from-transparent via-[var(--neon-magenta)] to-transparent opacity-50"
+                        animate={{ x: ['0%', '1600%'] }}
+                        transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+                      />
+
+                      {/* Rotating Focus Ring (Visible on Hover) */}
+                      <motion.div
+                        className="absolute -right-4 -top-4 w-16 h-16 border border-[var(--neon-magenta)]/10 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                        animate={{ rotate: 360 }}
+                        transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
+                      />
+
+                      {/* Button Content */}
+                      <div className="relative flex items-center gap-3">
+                        <div className="relative flex items-center justify-center">
+                          {/* Futuristic Play/Record Icon */}
+                          <div className="w-3 h-3 border border-[var(--neon-magenta)] rotate-45 group-hover:rotate-90 transition-transform duration-500" />
+                          <motion.div
+                            className="absolute w-1 h-1 bg-[var(--neon-magenta)]"
+                            animate={{ opacity: [0, 1, 0] }}
+                            transition={{ duration: 1, repeat: Infinity }}
+                          />
+                        </div>
+
+                        <div className="flex flex-col items-start">
+                          <span className="text-[10px] font-mono text-[var(--neon-magenta)]/60 leading-none tracking-[0.2em] uppercase mb-1">
+                            Signal_Locked
+                          </span>
+                          <span className="text-sm font-bold tracking-[0.1em] text-foreground font-display uppercase">
+                            Video Coming Soon
+                          </span>
+                        </div>
+
+                        {/* Chromatic Aberration Text Shadow (Hover Effect) */}
+                        <span className="absolute inset-0 text-sm font-bold tracking-[0.1em] text-[var(--neon-cyan)] font-display uppercase opacity-0 group-hover:opacity-40 group-hover:translate-x-[1px] transition-all pointer-events-none">
+                          Video Coming Soon
+                        </span>
+                      </div>
+
+                      {/* Corner Brackets */}
+                      <div className="absolute top-0 left-0 w-1 h-1 bg-[var(--neon-magenta)]" />
+                      <div className="absolute bottom-0 right-0 w-1 h-1 bg-[var(--neon-magenta)]" />
+                    </motion.button>
                   </motion.div>
                 </div>
               </div>
