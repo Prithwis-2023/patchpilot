@@ -5,11 +5,8 @@ from schemas import AnalysisResponse, TestResponse, PatchResponse
 import os
 from dotenv import load_dotenv
 
-# Model selection: Use gemini-2.5-flash for free-tier friendly access
-# Available models: gemini-2.5-flash, gemini-2.0-flash, gemini-flash-latest
 # gemini-3-pro-preview has quota limit 0 for free tier (only works in AI Studio)
-# gemini-2.5-flash: Latest flash model, free-tier friendly, good for multimodal tasks
-MODEL_ID = "gemini-2.5-flash"
+MODEL_ID = "gemini-3-flash-preview" 
 
 load_dotenv(os.path.join(os.path.dirname(__file__), '..', '.env'))
 
@@ -24,7 +21,7 @@ if not api_key:
 client = genai.Client(api_key=api_key)
 
 #genai.configure(api_key=os.getenv("GENAI_API_KEY"))
-#model = client.models.get("gemini-2.5-pro-latest") 
+#model = client.models.get("gemini-3-flash-preview")
 
 def clear_json_response(text):
     # this regex find text between ```json and ``` or just ```

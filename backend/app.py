@@ -1,6 +1,7 @@
 from fastapi import FastAPI, UploadFile, File, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, Response
+from starlette.middleware.base import BaseHTTPMiddleware
 from dotenv import load_dotenv
 from schemas import AnalysisResponse, TestResponse, PatchRequest, PatchResponse
 from video_utils import extract_frames
@@ -34,17 +35,72 @@ def get_cors_origins():
         return default_origins
     
     # Parse comma or space-separated origins
-    origins = [origin.strip() for origin in env_origins.replace(",", " ").split() if origin.strip()]
+    origins = [origin.strip().rstrip('/') for origin in env_origins.replace(",", " ").split() if origin.strip()]
     
     # Combine with defaults (avoid duplicates)
     all_origins = list(set(default_origins + origins))
     
     return all_origins
 
+def is_origin_allowed(origin: str) -> bool:
+    """Check if origin is allowed, handling trailing slashes and variations."""
+    if not origin:
+        return False
+    origin_clean = origin.rstrip('/')
+    allowed_origins = get_cors_origins()
+    return origin_clean in allowed_origins or origin in allowed_origins
+
 # CORS middleware - MUST be added before routes
+# Get CORS origins (this will be called once at startup)
+cors_origins = get_cors_origins()
+
+# Log CORS origins at startup for debugging
+print(f"[CORS] Allowed origins: {cors_origins}")
+
+# Custom middleware to ensure CORS headers on ALL responses (including timeouts/errors)
+class CORSHeaderMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request: Request, call_next):
+        origin = request.headers.get("origin", "")
+        allowed_origins = get_cors_origins()
+        
+        # Determine CORS origin - check if origin is allowed
+        if origin and is_origin_allowed(origin):
+            cors_origin = origin.rstrip('/')
+        elif allowed_origins:
+            cors_origin = allowed_origins[0]
+        else:
+            cors_origin = "*"
+        
+        try:
+            response = await call_next(request)
+        except Exception as e:
+            # Even on exceptions, return CORS headers
+            response = JSONResponse(
+                status_code=500,
+                content={"detail": str(e), "type": type(e).__name__},
+                headers={
+                    "Access-Control-Allow-Origin": cors_origin,
+                    "Access-Control-Allow-Credentials": "true",
+                    "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+                    "Access-Control-Allow-Headers": "*",
+                }
+            )
+        
+        # Ensure CORS headers are always present (override any existing)
+        response.headers["Access-Control-Allow-Origin"] = cors_origin
+        response.headers["Access-Control-Allow-Credentials"] = "true"
+        response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS"
+        response.headers["Access-Control-Allow-Headers"] = "*"
+        
+        return response
+
+# Add custom CORS middleware first (runs last in reverse order)
+app.add_middleware(CORSHeaderMiddleware)
+
+# Add FastAPI CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=get_cors_origins(),
+    allow_origins=cors_origins,
     allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allow_headers=["*"],
@@ -54,6 +110,11 @@ app.add_middleware(
 # Exception handler to ensure CORS headers on errors
 @app.exception_handler(Exception)
 async def global_exception_handler(request: Request, exc: Exception):
+    origin = request.headers.get("origin")
+    # Check if origin is in allowed origins
+    allowed_origins = get_cors_origins()
+    cors_origin = origin if origin in allowed_origins else allowed_origins[0] if allowed_origins else "*"
+    
     return JSONResponse(
         status_code=500,
         content={
@@ -61,8 +122,10 @@ async def global_exception_handler(request: Request, exc: Exception):
             "type": type(exc).__name__,
         },
         headers={
-            "Access-Control-Allow-Origin": request.headers.get("origin", "*"),
+            "Access-Control-Allow-Origin": cors_origin,
             "Access-Control-Allow-Credentials": "true",
+            "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+            "Access-Control-Allow-Headers": "*",
         }
     )
 

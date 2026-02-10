@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Card } from "@/app/components/ui/card";
-import { Upload, CheckCircle2, Loader2, Code2, Play, Terminal, FileDiff, FileText, ChevronLeft, ChevronRight, Video } from "lucide-react";
+import { Upload, CheckCircle2, Loader2, Code2, Play, Terminal, FileDiff, FileText,  Video } from "lucide-react";
 import SyntaxHighlightedCode from "./SyntaxHighlightedCode";
 import DiffViewer from "./DiffViewer";
 

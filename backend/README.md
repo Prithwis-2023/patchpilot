@@ -181,7 +181,7 @@ Generate code patch suggestion.
 
 ## 🤖 AI Model
 
-**Current Model:** `gemini-2.5-flash`
+**Current Model:** `gemini-3-flash-preview`
 
 - Free-tier friendly
 - Fast and efficient
@@ -235,7 +235,7 @@ ValueError: GENAI_API_KEY environment variable is required
 ```
 429 RESOURCE_EXHAUSTED
 ```
-→ Model `gemini-2.5-flash` should work. Check API key has free tier access.
+→ Model `gemini-3-flash-preview` should work. Check API key has free tier access.
 
 **CORS Errors:**
 → Ensure frontend origin is in `allow_origins` list in `app.py`

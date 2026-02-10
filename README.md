@@ -194,7 +194,7 @@ Patchpilot/
 - Add production URLs via `CORS_ALLOWED_ORIGINS` environment variable
 
 **Quota Limits**: 
-- Use `gemini-2.5-flash` model (free-tier friendly)
+- Use `gemini-3-flash-preview` model (free-tier friendly)
 - Model is configured in `backend/gemini.py`
 
 **Port Conflicts**: 
