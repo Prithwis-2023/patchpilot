@@ -177,9 +177,11 @@ Generated Test Code
     ▼
 run_playwright_test()
     │
-    ├─→ Write test file → temp/test_run.spec.ts
+    ├─→ Setup playwright_runner directory
     │
-    ├─→ Execute: npx playwright test
+    ├─→ Write test file → temp/playwright_runner/tests/test_*.spec.ts
+    │
+    ├─→ Execute: npx playwright test (from runner directory)
     │
     ├─→ Capture stdout/stderr
     │
@@ -259,14 +261,22 @@ interface BackendAdapter {
 ## 🔐 Security & Configuration
 
 ### CORS
-- Configured for localhost origins
+- Configured dynamically (defaults to localhost origins)
+- Can be customized via `CORS_ALLOWED_ORIGINS` environment variable
 - Credentials enabled
 - All methods allowed
 
 ### Environment Variables
+
+**Backend:**
 - `GENAI_API_KEY` - Required for backend
-- `NEXT_PUBLIC_BACKEND_URL` - Frontend config
-- `NEXT_PUBLIC_PIPELINE_MODE` - Frontend mode
+- `CORS_ALLOWED_ORIGINS` - Optional, comma-separated allowed origins
+- `UPLOAD_DIR` - Optional, temporary files directory (defaults to `temp`)
+- `PORT` - Optional, backend port (defaults to `8000`)
+
+**Frontend:**
+- `NEXT_PUBLIC_BACKEND_URL` - Backend API URL
+- `NEXT_PUBLIC_PIPELINE_MODE` - Pipeline mode (`sample` or `backend`)
 
 ### Error Handling
 - Global exception handler ensures CORS headers
