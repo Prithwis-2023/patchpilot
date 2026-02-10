@@ -53,7 +53,7 @@ Instead of manually writing bug reports, PatchPilot:
 ### Prerequisites
 - Node.js 18+ and pnpm
 - Python 3.12+
-- Google AI API key ([Get one here](https://ai.google.dev/))
+- Gemini API key ([Get one here](https://ai.google.dev/))
 
 ### 1. Clone & Install
 
