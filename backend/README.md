@@ -29,20 +29,16 @@ playwright install
 
 ### Configuration
 
-Create `.env` file in the backend directory (or project root):
+Create `.env` file in the `backend/` directory:
 
 ```env
 GENAI_API_KEY=your_api_key_here
 ```
 
-**Note:** The backend also accepts `GOOGLE_API_KEY` as an alternative to `GENAI_API_KEY`.
-
-### Environment Variables
-
-- `GENAI_API_KEY` or `GOOGLE_API_KEY` - **Required**. Google AI API key for Gemini integration
-- `PORT` - Optional. Backend server port (default: 8000)
-- `CORS_ALLOWED_ORIGINS` - Optional. Comma or space-separated list of allowed CORS origins (defaults to localhost URLs)
-- `UPLOAD_DIR` - Optional. Directory for temporary file uploads (default: `temp`)
+**Optional environment variables:**
+- `CORS_ALLOWED_ORIGINS` - Comma or space-separated list of allowed origins (defaults to localhost URLs)
+- `UPLOAD_DIR` - Directory for temporary files (defaults to `temp`)
+- `PORT` - Backend port (defaults to `8000`)
 
 ### Run Server
 
@@ -52,9 +48,6 @@ uvicorn app:app --reload --port 8000
 
 # Production
 uvicorn app:app --host 0.0.0.0 --port 8000
-
-# Or use the startup script (Linux/macOS)
-./start.sh
 ```
 
 API available at: http://localhost:8000  
@@ -70,8 +63,7 @@ backend/
 ├── playwright_runner.py # Test execution
 ├── schemas.py          # Pydantic models
 ├── requirements.txt    # Python dependencies
-├── start.sh            # Startup script for production
-├── guide.csv           # API endpoint documentation
+├── guide.csv           # API endpoint reference guide
 └── temp/               # Temporary files (gitignored)
     ├── frames/         # Extracted video frames
     ├── playwright_runner/ # Playwright test execution directory
@@ -101,7 +93,7 @@ Debug endpoint to inspect CORS configuration.
 ```
 
 ### `GET /selfcheck`
-Self-check endpoint to verify Playwright setup and dependencies.
+Self-check endpoint to verify Playwright setup.
 
 **Response:**
 ```json
@@ -136,6 +128,10 @@ Analyze video and extract bug information.
 }
 ```
 
+**Note:** The frontend normalizes this response:
+- `timeline` is converted from `[{t: number, event: string}]` to `[{timestamp: string, description: string}]`
+- `reproSteps` is converted from `string[]` to `[{number: number, description: string}]`
+
 ### `POST /generate-test`
 Generate Playwright test from analysis.
 
@@ -165,6 +161,8 @@ Execute Playwright test.
 }
 ```
 
+**Note:** The frontend normalizes `status` from `"passed"` to `"success"`.
+
 ### `POST /generate-patch`
 Generate code patch suggestion.
 
@@ -178,6 +176,8 @@ Generate code patch suggestion.
   "risks": ["Risk 1", "Risk 2"]
 }
 ```
+
+**Note:** The frontend normalizes `rationale` from `string[]` to a single `string` (joined with newlines).
 
 ## 🤖 AI Model
 
@@ -202,13 +202,18 @@ playwright install
 
 ### CORS Configuration
 
-CORS is configured for:
-- `http://localhost:3000`
-- `http://localhost:3001`
-- `http://127.0.0.1:3000`
-- `http://127.0.0.1:3001`
+CORS is configured dynamically:
+- **Default origins** (always included):
+  - `http://localhost:3000`
+  - `http://localhost:3001`
+  - `http://127.0.0.1:3000`
+  - `http://127.0.0.1:3001`
+- **Custom origins** via `CORS_ALLOWED_ORIGINS` environment variable:
+  ```env
+  CORS_ALLOWED_ORIGINS="https://example.com,https://app.example.com"
+  ```
 
-Add production URLs in `app.py` if needed.
+Use `GET /debug/cors` endpoint to inspect current CORS configuration.
 
 ### Video Processing
 
