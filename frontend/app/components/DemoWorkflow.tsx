@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Card } from "@/app/components/ui/card";
-import { Upload, CheckCircle2, Loader2, Code2, Play, Terminal, FileDiff, FileText } from "lucide-react";
+import { Upload, CheckCircle2, Loader2, Code2, Play, Terminal, FileDiff, FileText, ChevronLeft, ChevronRight, Video } from "lucide-react";
 import SyntaxHighlightedCode from "./SyntaxHighlightedCode";
 import DiffViewer from "./DiffViewer";
 
@@ -117,6 +117,7 @@ Login button does not enable when valid email is entered.
 export default function DemoWorkflow() {
   const [currentStep, setCurrentStep] = useState<WorkflowStep>("upload");
   const [isRunning, setIsRunning] = useState(false);
+  const [activeSlide, setActiveSlide] = useState<"demo" | "video">("demo");
 
   useEffect(() => {
     if (!isRunning) return;
@@ -160,8 +161,43 @@ export default function DemoWorkflow() {
 
   return (
     <div className="space-y-6">
-      {/* Two-Panel Layout */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      {/* Slider Navigation */}
+      <div className="flex items-center justify-center gap-4 mb-6">
+        <button
+          onClick={() => setActiveSlide("demo")}
+          className={`px-6 py-3 rounded-lg border-2 font-bold font-mono text-sm transition-all ${
+            activeSlide === "demo"
+              ? "bg-[var(--neon-cyan)]/20 border-[var(--neon-cyan)] text-[var(--neon-cyan)] shadow-[0_0_15px_rgba(0,255,255,0.3)]"
+              : "bg-muted/10 border-border/30 text-muted-foreground hover:border-[var(--neon-cyan)]/50"
+          }`}
+        >
+          Interactive Demo
+        </button>
+        <button
+          onClick={() => setActiveSlide("video")}
+          className={`px-6 py-3 rounded-lg border-2 font-bold font-mono text-sm transition-all ${
+            activeSlide === "video"
+              ? "bg-[var(--neon-cyan)]/20 border-[var(--neon-cyan)] text-[var(--neon-cyan)] shadow-[0_0_15px_rgba(0,255,255,0.3)]"
+              : "bg-muted/10 border-border/30 text-muted-foreground hover:border-[var(--neon-cyan)]/50"
+          }`}
+        >
+          <Video className="w-4 h-4 inline mr-2" />
+          Video Demo
+        </button>
+      </div>
+
+      {/* Slider Content */}
+      <AnimatePresence mode="wait">
+        {activeSlide === "demo" ? (
+          <motion.div
+            key="demo"
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: 20 }}
+            transition={{ duration: 0.3 }}
+          >
+            {/* Two-Panel Layout */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Left: Stepper */}
         <Card className={`p-6 bg-card/50 backdrop-blur-sm border-2 ${borderClass}`}>
           <h3 className="text-xl font-bold mb-6 text-[var(--neon-cyan)]" style={{ fontFamily: 'var(--font-display)' }}>
@@ -290,29 +326,56 @@ export default function DemoWorkflow() {
         </Card>
       </div>
 
-      {/* Controls */}
-      <div className="flex justify-center">
-        {!isRunning ? (
-          <motion.button
-            onClick={startDemo}
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            className="px-8 py-4 bg-[var(--neon-cyan)]/10 border-2 border-[var(--neon-cyan)]/50 text-[var(--neon-cyan)] font-bold rounded-lg hover:bg-[var(--neon-cyan)]/20 hover:shadow-[0_0_20px_rgba(0,255,255,0.4)] transition-all"
-            style={{ fontFamily: 'var(--font-display)' }}
-          >
-            <Play className="w-5 h-5 inline mr-2" />
-            START DEMO
-          </motion.button>
+            {/* Controls */}
+            <div className="flex justify-center">
+              {!isRunning ? (
+                <motion.button
+                  onClick={startDemo}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  className="px-8 py-4 bg-[var(--neon-cyan)]/10 border-2 border-[var(--neon-cyan)]/50 text-[var(--neon-cyan)] font-bold rounded-lg hover:bg-[var(--neon-cyan)]/20 hover:shadow-[0_0_20px_rgba(0,255,255,0.4)] transition-all"
+                  style={{ fontFamily: 'var(--font-display)' }}
+                >
+                  <Play className="w-5 h-5 inline mr-2" />
+                  START DEMO
+                </motion.button>
+              ) : (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className="text-sm text-muted-foreground font-mono"
+                >
+                  Running workflow...
+                </motion.div>
+              )}
+            </div>
+          </motion.div>
         ) : (
           <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="text-sm text-muted-foreground font-mono"
+            key="video"
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -20 }}
+            transition={{ duration: 0.3 }}
+            className="w-full"
           >
-            Running workflow...
+            <Card className="p-6 bg-card/50 backdrop-blur-sm border-2 neon-border-cyan overflow-hidden">
+              <h3 className="text-xl font-bold mb-4 text-[var(--neon-cyan)]" style={{ fontFamily: 'var(--font-display)' }}>
+                VIDEO DEMONSTRATION
+              </h3>
+              <div className="relative w-full" style={{ paddingBottom: '56.25%' }}>
+                <iframe
+                  className="absolute top-0 left-0 w-full h-full border-2 border-[var(--neon-cyan)]/50 rounded-lg"
+                  src="https://www.youtube.com/embed/HKxgEEK4rlo"
+                  title="PatchPilot Demo"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                />
+              </div>
+            </Card>
           </motion.div>
         )}
-      </div>
+      </AnimatePresence>
     </div>
   );
 }
