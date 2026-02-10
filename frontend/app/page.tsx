@@ -43,7 +43,7 @@ export default function Home() {
               href="/workflow" 
               className="px-4 py-2 bg-[var(--neon-cyan)]/10 border-2 border-[var(--neon-cyan)]/50 text-[var(--neon-cyan)] font-bold hover:bg-[var(--neon-cyan)]/20 hover:shadow-[0_0_20px_rgba(0,255,255,0.4)] transition-all"
             >
-              SIMULATOR →
+              WORKFLOW →
             </Link>
           </div>
         </div>

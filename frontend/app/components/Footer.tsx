@@ -130,9 +130,9 @@ export default function Footer() {
             <div className="flex flex-col gap-6">
               <h4 className="text-[10px] font-bold text-[var(--neon-lime)] tracking-[0.3em] uppercase font-display">Protocol</h4>
               <ul className="flex flex-col gap-4">
-                {['Features', 'Workflow', 'Demo', 'Simulator'].map((item) => (
+                {['Features', 'Workflow', 'Demo', 'Try Workflow'].map((item) => (
                   <li key={item}>
-                    <Link href={item === 'Simulator' ? '/workflow' : `/#${item.toLowerCase()}`} className="text-sm text-muted-foreground hover:text-foreground transition-all flex items-center gap-3 group">
+                    <Link href={item === 'Try Workflow' ? '/workflow' : `/#${item.toLowerCase()}`} className="text-sm text-muted-foreground hover:text-foreground transition-all flex items-center gap-3 group">
                       <span className="w-1 h-1 bg-border group-hover:bg-[var(--neon-lime)] group-hover:scale-150 transition-all" />
                       {item}
                     </Link>
