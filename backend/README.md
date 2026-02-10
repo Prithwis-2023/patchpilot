@@ -29,11 +29,20 @@ playwright install
 
 ### Configuration
 
-Create `.env` file in project root:
+Create `.env` file in the backend directory (or project root):
 
 ```env
 GENAI_API_KEY=your_api_key_here
 ```
+
+**Note:** The backend also accepts `GOOGLE_API_KEY` as an alternative to `GENAI_API_KEY`.
+
+### Environment Variables
+
+- `GENAI_API_KEY` or `GOOGLE_API_KEY` - **Required**. Google AI API key for Gemini integration
+- `PORT` - Optional. Backend server port (default: 8000)
+- `CORS_ALLOWED_ORIGINS` - Optional. Comma or space-separated list of allowed CORS origins (defaults to localhost URLs)
+- `UPLOAD_DIR` - Optional. Directory for temporary file uploads (default: `temp`)
 
 ### Run Server
 
@@ -43,6 +52,9 @@ uvicorn app:app --reload --port 8000
 
 # Production
 uvicorn app:app --host 0.0.0.0 --port 8000
+
+# Or use the startup script (Linux/macOS)
+./start.sh
 ```
 
 API available at: http://localhost:8000  
@@ -58,8 +70,11 @@ backend/
 ├── playwright_runner.py # Test execution
 ├── schemas.py          # Pydantic models
 ├── requirements.txt    # Python dependencies
+├── start.sh            # Startup script for production
+├── guide.csv           # API endpoint documentation
 └── temp/               # Temporary files (gitignored)
     ├── frames/         # Extracted video frames
+    ├── playwright_runner/ # Playwright test execution directory
     └── *.mp4           # Uploaded videos
 ```
 
@@ -71,6 +86,37 @@ Health check endpoint.
 **Response:**
 ```json
 {"ok": true}
+```
+
+### `GET /debug/cors`
+Debug endpoint to inspect CORS configuration.
+
+**Response:**
+```json
+{
+  "cors_origins": ["http://localhost:3000", ...],
+  "env_var": "CORS_ALLOWED_ORIGINS value or NOT SET",
+  "all_env_vars": {...}
+}
+```
+
+### `GET /selfcheck`
+Self-check endpoint to verify Playwright setup and dependencies.
+
+**Response:**
+```json
+{
+  "status": "ok" | "warning",
+  "checks": {
+    "node": true,
+    "npx": true,
+    "package_json": true,
+    "playwright_installed": true,
+    "chromium_installed": true,
+    "errors": []
+  },
+  "runner_dir": "path/to/playwright_runner"
+}
 ```
 
 ### `POST /analyze`
